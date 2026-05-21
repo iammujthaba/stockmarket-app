@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import { calculateFees } from '../utils/FeeCalculator';
 
-export default function TradeCalculator({ market, profile, onLogTrade }) {
+export default function TradeCalculator({ market, profile, onLogTrade, tradeType, setTradeType, availableBalance, activeLeverage }) {
   const [direction, setDirection] = useState('long');
   const [entryPrice, setEntryPrice] = useState('');
   const [stopLoss, setStopLoss] = useState('');
@@ -10,7 +10,6 @@ export default function TradeCalculator({ market, profile, onLogTrade }) {
   const [showFeeBreakdown, setShowFeeBreakdown] = useState(false);
   const [lotSizeOverride, setLotSizeOverride] = useState(profile.lotSize || 1);
   const [useLotSize, setUseLotSize] = useState(profile.useLotSize || false);
-  const [tradeType, setTradeType] = useState('intraday');
 
   // Sync R:R and lot settings from profile when market changes
   useEffect(() => {
@@ -18,8 +17,6 @@ export default function TradeCalculator({ market, profile, onLogTrade }) {
     if (market === 'indian') {
       setLotSizeOverride(profile.lotSize || 1);
       setUseLotSize(profile.useLotSize || false);
-    } else {
-      setTradeType('intraday');
     }
   }, [profile, market]);
 
@@ -79,6 +76,11 @@ export default function TradeCalculator({ market, profile, onLogTrade }) {
     // Potential reward
     const potentialReward = Math.abs(targetPrice - entry) * quantity;
 
+    // Active Leverage & Buying Power / Margin
+    const requiredMargin = positionSize / activeLeverage;
+    const maxBuyingPower = availableBalance * activeLeverage;
+    const isMarginExceeded = requiredMargin > availableBalance;
+
     // Fee calculations
     const entryToTarget = calculateFees(market, {
       entryPrice: entry,
@@ -117,8 +119,12 @@ export default function TradeCalculator({ market, profile, onLogTrade }) {
       netProfit,
       netLoss,
       effectiveRR,
+      activeLeverage,
+      requiredMargin,
+      maxBuyingPower,
+      isMarginExceeded,
     };
-  }, [entryPrice, stopLoss, rrRatio, direction, market, profile, useLotSize, lotSizeOverride, tradeType]);
+  }, [entryPrice, stopLoss, rrRatio, direction, market, profile, useLotSize, lotSizeOverride, tradeType, availableBalance, activeLeverage]);
 
   const handleLogTrade = () => {
     if (!calculations || !symbol.trim()) return;
@@ -133,6 +139,7 @@ export default function TradeCalculator({ market, profile, onLogTrade }) {
       quantity: calculations.quantity,
       totalRisk: calculations.actualRisk,
       positionSize: calculations.positionSize,
+      marginUtilized: calculations.requiredMargin,
       timestamp: new Date().toISOString(),
     });
     // Clear form
@@ -327,6 +334,17 @@ export default function TradeCalculator({ market, profile, onLogTrade }) {
               </p>
             </div>
           </div>
+
+          {calculations.isMarginExceeded && (
+            <div className="bg-yellow-900/30 border border-yellow-700/50 text-yellow-400 p-3.5 rounded-2xl text-xs sm:text-sm mt-4">
+              <p className="font-semibold mb-1 flex items-center gap-1.5">
+                <span>⚠️</span> Insufficient Buying Power
+              </p>
+              <p className="text-gray-300 leading-relaxed">
+                This trade requires a position size of <span className="font-semibold text-white font-mono">{currency}{calculations.positionSize.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span> (Required Margin: <span className="font-semibold text-white font-mono">{currency}{calculations.requiredMargin.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>), but your remaining available balance is <span className="font-semibold text-white font-mono">{currency}{availableBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span> (Max Buying Power: <span className="font-semibold text-white font-mono">{currency}{calculations.maxBuyingPower.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>). You do not have enough margin to execute this trade.
+              </p>
+            </div>
+          )}
 
           {/* Secondary metrics */}
           <div className="bg-gray-800/30 border border-gray-700/30 rounded-2xl divide-y divide-gray-700/30">

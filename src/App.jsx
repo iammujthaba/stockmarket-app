@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useLocalStorage } from './hooks/useLocalStorage';
 import SettingsModal from './components/SettingsModal';
 import TradeCalculator from './components/TradeCalculator';
@@ -33,8 +33,26 @@ export default function App() {
   const [activeTrades, setActiveTrades] = useLocalStorage('riskCalc_activeTrades', []);
   const [market, setMarket] = useLocalStorage('riskCalc_market', 'indian');
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [tradeType, setTradeType] = useState('intraday');
+
+  // Reset tradeType to intraday if market is not indian
+  useEffect(() => {
+    if (market !== 'indian') {
+      setTradeType('intraday');
+    }
+  }, [market]);
 
   const currentProfile = profiles[market] || DEFAULT_PROFILES[market];
+
+  const activeLeverage = market === 'indian'
+    ? (tradeType === 'intraday' ? 5 : 1)
+    : (currentProfile.leverage || 1);
+
+  const totalDeployedCapital = activeTrades
+    .filter((t) => t.market === market)
+    .reduce((sum, t) => sum + (t.marginUtilized || 0), 0);
+
+  const availableBalance = currentProfile.accountBalance - totalDeployedCapital;
 
   const handleLogTrade = (trade) => {
     setActiveTrades((prev) => [trade, ...prev]);
@@ -113,7 +131,7 @@ export default function App() {
           <div className="mt-3 flex flex-wrap gap-2">
             <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-gray-800/40 border border-gray-700/30 rounded-lg text-xs text-gray-400">
               <span className="w-1.5 h-1.5 rounded-full bg-cyan-500" />
-              Balance: {currentProfile.currency}{currentProfile.accountBalance.toLocaleString()}
+              Balance: {currentProfile.currency}{availableBalance.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })}
             </span>
             <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-gray-800/40 border border-gray-700/30 rounded-lg text-xs text-gray-400">
               <span className="w-1.5 h-1.5 rounded-full bg-red-500" />
@@ -126,12 +144,10 @@ export default function App() {
               <span className="w-1.5 h-1.5 rounded-full bg-purple-500" />
               R:R {currentProfile.defaultRR}:1
             </span>
-            {market === 'crypto' && (
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-gray-800/40 border border-gray-700/30 rounded-lg text-xs text-gray-400">
-                <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
-                {currentProfile.leverage || 1}x Leverage
-              </span>
-            )}
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-gray-800/40 border border-gray-700/30 rounded-lg text-xs text-gray-400">
+              <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+              Leverage: {activeLeverage}X
+            </span>
           </div>
         </header>
 
@@ -142,6 +158,10 @@ export default function App() {
               market={market}
               profile={currentProfile}
               onLogTrade={handleLogTrade}
+              tradeType={tradeType}
+              setTradeType={setTradeType}
+              availableBalance={availableBalance}
+              activeLeverage={activeLeverage}
             />
           </div>
         </section>
@@ -169,7 +189,7 @@ export default function App() {
         {/* Footer */}
         <footer className="mt-10 text-center">
           <p className="text-xs text-gray-600">
-            All data stored locally in your browser • No backend required
+            All data stored locally in your browser
           </p>
         </footer>
       </div>
