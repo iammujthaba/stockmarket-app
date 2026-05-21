@@ -264,14 +264,17 @@ export default function TradeCalculator({ market, profile, onLogTrade, tradeType
         {/* Risk:Reward Ratio */}
         <div className="space-y-1.5">
           <label className="text-xs font-medium text-gray-400 uppercase tracking-wider">R:R Ratio</label>
-          <input
-            type="number"
-            step="0.1"
-            min="0.1"
-            value={rrRatio}
-            onChange={(e) => setRrRatio(e.target.value)}
-            className="w-full px-4 py-2.5 bg-gray-800/50 border border-gray-700/50 rounded-xl text-white placeholder-gray-600 focus:outline-none focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/20 transition-all font-mono"
-          />
+          <div className="flex items-center bg-gray-800/50 border border-gray-700/50 rounded-xl px-4 py-2.5 focus-within:border-cyan-500/50 focus-within:ring-1 focus-within:ring-cyan-500/20 transition-all">
+            <span className="text-gray-500 font-mono select-none mr-2 whitespace-nowrap shrink-0">1 :</span>
+            <input
+              type="number"
+              step="0.1"
+              min="0.1"
+              value={rrRatio}
+              onChange={(e) => setRrRatio(e.target.value)}
+              className="flex-1 min-w-0 bg-transparent text-white placeholder-gray-600 focus:outline-none font-mono"
+            />
+          </div>
         </div>
 
         {/* Lot Size (Indian only) */}

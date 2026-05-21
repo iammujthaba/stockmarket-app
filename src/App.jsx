@@ -128,24 +128,20 @@ export default function App() {
           </div>
 
           {/* Profile Summary Pills */}
-          <div className="mt-3 grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:gap-2">
-            <span className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-800/40 border border-gray-700/30 rounded-lg text-xs text-gray-400 justify-center sm:justify-start">
-              <span className="w-1.5 h-1.5 rounded-full bg-cyan-500 shrink-0" />
+          <div className="mt-3 flex flex-wrap gap-2">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-gray-800/40 border border-gray-700/30 rounded-lg text-xs text-gray-400">
+              <span className="w-1.5 h-1.5 rounded-full bg-cyan-500" />
               Balance: {currentProfile.currency}{availableBalance.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })}
             </span>
-            <span className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-800/40 border border-gray-700/30 rounded-lg text-xs text-gray-400 justify-center sm:justify-start">
-              <span className="w-1.5 h-1.5 rounded-full bg-red-500 shrink-0" />
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-gray-800/40 border border-gray-700/30 rounded-lg text-xs text-gray-400">
+              <span className="w-1.5 h-1.5 rounded-full bg-red-500" />
               Risk: {currentProfile.riskMode === 'fixed'
                 ? `${currentProfile.currency}${currentProfile.fixedRisk}`
                 : `${currentProfile.riskPercent}%`
               }
             </span>
-            <span className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-800/40 border border-gray-700/30 rounded-lg text-xs text-gray-400 justify-center sm:justify-start">
-              <span className="w-1.5 h-1.5 rounded-full bg-purple-500 shrink-0" />
-              R:R {currentProfile.defaultRR}:1
-            </span>
-            <span className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-800/40 border border-gray-700/30 rounded-lg text-xs text-gray-400 justify-center sm:justify-start">
-              <span className="w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0" />
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-gray-800/40 border border-gray-700/30 rounded-lg text-xs text-gray-400">
+              <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
               Leverage: {activeLeverage}X
             </span>
           </div>
