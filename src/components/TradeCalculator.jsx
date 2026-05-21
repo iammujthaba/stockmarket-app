@@ -60,8 +60,6 @@ export default function TradeCalculator({ market, profile, onLogTrade, tradeType
       }
     }
 
-    if (quantity <= 0) return null;
-
     // Target price
     const targetPrice = direction === 'long'
       ? entry + (riskPerShare * rr)
@@ -80,6 +78,13 @@ export default function TradeCalculator({ market, profile, onLogTrade, tradeType
     const requiredMargin = positionSize / activeLeverage;
     const maxBuyingPower = availableBalance * activeLeverage;
     const isMarginExceeded = requiredMargin > availableBalance;
+
+    // Warning 1: Risk Capacity Exceeded (Quantity = 0 / calculatedQuantity < 1)
+    const isRiskCapacityExceeded = market === 'indian' ? (quantity < 1) : (quantity <= 0);
+
+    // Warning 2: Liquidation Risk (Crypto Leveraged Trades)
+    const bankruptcyDistance = entry / activeLeverage;
+    const isLiquidationRisk = (market === 'crypto' && activeLeverage > 1 && riskPerShare >= bankruptcyDistance);
 
     // Fee calculations
     const entryToTarget = calculateFees(market, {
@@ -123,6 +128,8 @@ export default function TradeCalculator({ market, profile, onLogTrade, tradeType
       requiredMargin,
       maxBuyingPower,
       isMarginExceeded,
+      isRiskCapacityExceeded,
+      isLiquidationRisk,
     };
   }, [entryPrice, stopLoss, rrRatio, direction, market, profile, useLotSize, lotSizeOverride, tradeType, availableBalance, activeLeverage]);
 
@@ -336,12 +343,34 @@ export default function TradeCalculator({ market, profile, onLogTrade, tradeType
           </div>
 
           {calculations.isMarginExceeded && (
-            <div className="bg-yellow-900/30 border border-yellow-700/50 text-yellow-400 p-3.5 rounded-2xl text-xs sm:text-sm mt-4">
+            <div className="bg-yellow-900/30 border border-yellow-700/50 text-yellow-400 p-3.5 rounded-2xl text-xs sm:text-sm mt-4 animate-fade-in">
               <p className="font-semibold mb-1 flex items-center gap-1.5">
                 <span>⚠️</span> Insufficient Buying Power
               </p>
               <p className="text-gray-300 leading-relaxed">
                 This trade requires a position size of <span className="font-semibold text-white font-mono">{currency}{calculations.positionSize.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span> (Required Margin: <span className="font-semibold text-white font-mono">{currency}{calculations.requiredMargin.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>), but your remaining available balance is <span className="font-semibold text-white font-mono">{currency}{availableBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span> (Max Buying Power: <span className="font-semibold text-white font-mono">{currency}{calculations.maxBuyingPower.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>). You do not have enough margin to execute this trade.
+              </p>
+            </div>
+          )}
+
+          {calculations.isRiskCapacityExceeded && (
+            <div className="bg-red-950/30 border border-red-700/50 text-red-400 p-3.5 rounded-2xl text-xs sm:text-sm mt-4 animate-fade-in">
+              <p className="font-semibold mb-1 flex items-center gap-1.5">
+                <span>⚠️</span> Stop Loss Too Wide
+              </p>
+              <p className="text-gray-300 leading-relaxed">
+                Your structural risk per share exceeds your total allocated risk amount. You cannot buy a minimum of 1 share without breaking your risk rules. Skip the trade or increase your risk allowance.
+              </p>
+            </div>
+          )}
+
+          {calculations.isLiquidationRisk && (
+            <div className="bg-red-950/30 border border-red-700/50 text-red-400 p-3.5 rounded-2xl text-xs sm:text-sm mt-4 animate-fade-in">
+              <p className="font-semibold mb-1 flex items-center gap-1.5">
+                <span>💀</span> Liquidation Danger
+              </p>
+              <p className="text-gray-300 leading-relaxed">
+                Your stop loss is placed wider than your liquidation price. The exchange will liquidate your position before your stop loss is ever triggered! Tighten your stop loss or reduce your leverage.
               </p>
             </div>
           )}
