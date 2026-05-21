@@ -10,6 +10,7 @@ export default function TradeCalculator({ market, profile, onLogTrade }) {
   const [showFeeBreakdown, setShowFeeBreakdown] = useState(false);
   const [lotSizeOverride, setLotSizeOverride] = useState(profile.lotSize || 1);
   const [useLotSize, setUseLotSize] = useState(profile.useLotSize || false);
+  const [tradeType, setTradeType] = useState('intraday');
 
   // Sync R:R and lot settings from profile when market changes
   useEffect(() => {
@@ -17,6 +18,8 @@ export default function TradeCalculator({ market, profile, onLogTrade }) {
     if (market === 'indian') {
       setLotSizeOverride(profile.lotSize || 1);
       setUseLotSize(profile.useLotSize || false);
+    } else {
+      setTradeType('intraday');
     }
   }, [profile, market]);
 
@@ -82,6 +85,7 @@ export default function TradeCalculator({ market, profile, onLogTrade }) {
       exitPrice: targetPrice,
       quantity,
       leverage: profile.leverage || 1,
+      tradeType,
     });
 
     const entryToSL = calculateFees(market, {
@@ -89,6 +93,7 @@ export default function TradeCalculator({ market, profile, onLogTrade }) {
       exitPrice: sl,
       quantity,
       leverage: profile.leverage || 1,
+      tradeType,
     });
 
     // Net P&L after fees
@@ -113,7 +118,7 @@ export default function TradeCalculator({ market, profile, onLogTrade }) {
       netLoss,
       effectiveRR,
     };
-  }, [entryPrice, stopLoss, rrRatio, direction, market, profile, useLotSize, lotSizeOverride]);
+  }, [entryPrice, stopLoss, rrRatio, direction, market, profile, useLotSize, lotSizeOverride, tradeType]);
 
   const handleLogTrade = () => {
     if (!calculations || !symbol.trim()) return;
@@ -173,6 +178,34 @@ export default function TradeCalculator({ market, profile, onLogTrade }) {
           </span>
         </button>
       </div>
+
+      {/* Trade Type Toggle (Indian Only) */}
+      {market === 'indian' && (
+        <div className="flex bg-gray-800/40 border border-gray-700/30 rounded-xl p-1">
+          <button
+            type="button"
+            onClick={() => setTradeType('intraday')}
+            className={`flex-1 py-2 text-xs font-semibold rounded-lg tracking-wider transition-all duration-200 ${
+              tradeType === 'intraday'
+                ? 'bg-cyan-500/15 text-cyan-400 border border-cyan-500/30 shadow-sm'
+                : 'text-gray-400 hover:text-gray-300 border border-transparent'
+            }`}
+          >
+            INTRADAY
+          </button>
+          <button
+            type="button"
+            onClick={() => setTradeType('delivery')}
+            className={`flex-1 py-2 text-xs font-semibold rounded-lg tracking-wider transition-all duration-200 ${
+              tradeType === 'delivery'
+                ? 'bg-purple-500/15 text-purple-400 border border-purple-500/30 shadow-sm'
+                : 'text-gray-400 hover:text-gray-300 border border-transparent'
+            }`}
+          >
+            DELIVERY
+          </button>
+        </div>
+      )}
 
       {/* Input Grid */}
       <div className="grid grid-cols-2 gap-4">

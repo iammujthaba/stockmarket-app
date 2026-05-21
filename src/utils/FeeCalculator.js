@@ -21,7 +21,7 @@
  * @param {number} quantity    - Number of shares
  * @returns {{ breakdown: object, totalFees: number }}
  */
-export function calculateDhanFees(entryPrice, exitPrice, quantity) {
+export function calculateDhanFees(entryPrice, exitPrice, quantity, tradeType = 'intraday') {
   if (!entryPrice || !exitPrice || !quantity) {
     return { breakdown: {}, totalFees: 0 };
   }
@@ -30,27 +30,51 @@ export function calculateDhanFees(entryPrice, exitPrice, quantity) {
   const sellTurnover = exitPrice  * quantity;
   const totalTurnover = buyTurnover + sellTurnover;
 
-  // 1. Brokerage: Lower of ₹20 or 0.03% per executed order (buy + sell)
-  const buyBrokerage  = Math.min(20, buyTurnover  * 0.0003);
-  const sellBrokerage = Math.min(20, sellTurnover * 0.0003);
-  const brokerage = buyBrokerage + sellBrokerage;
+  let brokerage = 0;
+  let stt = 0;
+  let txnCharges = 0;
+  let gst = 0;
+  let sebiCharges = 0;
+  let stampDuty = 0;
+  let dpCharges = 0;
 
-  // 2. STT (Securities Transaction Tax): 0.025% on Sell side ONLY
-  const stt = sellTurnover * 0.00025;
+  if (tradeType === 'delivery') {
+    // Delivery Logic
+    // Brokerage: ₹0
+    brokerage = 0;
+    // STT: 0.1% on both Buy and Sell sides
+    stt = totalTurnover * 0.001;
+    // Exchange Transaction Charges: 0.00325% on both sides
+    txnCharges = totalTurnover * 0.0000325;
+    // GST: 18% on (Brokerage + Transaction Charges)
+    gst = (brokerage + txnCharges) * 0.18;
+    // SEBI Charges: 0.0001% on both sides
+    sebiCharges = totalTurnover * 0.000001;
+    // Stamp Duty: 0.015% on Buy side ONLY
+    stampDuty = buyTurnover * 0.00015;
+    // DP Charges: Flat ₹14.75 on Sell side ONLY
+    dpCharges = 14.75;
+  } else {
+    // Intraday Logic (Default)
+    // Brokerage: Lower of ₹20 or 0.03% on each side
+    const buyBrokerage  = Math.min(20, buyTurnover  * 0.0003);
+    const sellBrokerage = Math.min(20, sellTurnover * 0.0003);
+    brokerage = buyBrokerage + sellBrokerage;
+    // STT: 0.025% on Sell side ONLY
+    stt = sellTurnover * 0.00025;
+    // Exchange Transaction Charges: 0.00325% on both sides
+    txnCharges = totalTurnover * 0.0000325;
+    // GST: 18% on (Brokerage + Transaction Charges)
+    gst = (brokerage + txnCharges) * 0.18;
+    // SEBI Charges: 0.0001% on both sides
+    sebiCharges = totalTurnover * 0.000001;
+    // Stamp Duty: 0.003% on Buy side ONLY
+    stampDuty = buyTurnover * 0.00003;
+    // DP Charges: ₹0
+    dpCharges = 0;
+  }
 
-  // 3. Transaction Charges (NSE): 0.00325% on both sides
-  const txnCharges = totalTurnover * 0.0000325;
-
-  // 4. GST: 18% on (Brokerage + Transaction Charges)
-  const gst = (brokerage + txnCharges) * 0.18;
-
-  // 5. SEBI Charges: 0.0001% on both sides
-  const sebiCharges = totalTurnover * 0.000001;
-
-  // 6. Stamp Duty: 0.003% on Buy side ONLY
-  const stampDuty = buyTurnover * 0.00003;
-
-  const totalFees = brokerage + stt + txnCharges + gst + sebiCharges + stampDuty;
+  const totalFees = brokerage + stt + txnCharges + gst + sebiCharges + stampDuty + dpCharges;
 
   return {
     breakdown: {
@@ -60,6 +84,7 @@ export function calculateDhanFees(entryPrice, exitPrice, quantity) {
       gst:         +gst.toFixed(2),
       sebiCharges: +sebiCharges.toFixed(4),
       stampDuty:   +stampDuty.toFixed(2),
+      dpCharges:   +dpCharges.toFixed(2),
     },
     totalFees: +totalFees.toFixed(2),
   };
@@ -117,10 +142,10 @@ export function calculateBinanceFees(entryPrice, exitPrice, quantity, leverage =
  * @param {object} params - { entryPrice, exitPrice, quantity, leverage? }
  * @returns {{ breakdown: object, totalFees: number }}
  */
-export function calculateFees(market, { entryPrice, exitPrice, quantity, leverage }) {
+export function calculateFees(market, { entryPrice, exitPrice, quantity, leverage, tradeType }) {
   switch (market) {
     case 'indian':
-      return calculateDhanFees(entryPrice, exitPrice, quantity);
+      return calculateDhanFees(entryPrice, exitPrice, quantity, tradeType);
     case 'crypto':
       return calculateBinanceFees(entryPrice, exitPrice, quantity, leverage);
     default:
