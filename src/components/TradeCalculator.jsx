@@ -213,6 +213,7 @@ export default function TradeCalculator({ market, profile, onLogTrade, tradeType
       totalRisk: calculations.actualRisk,
       positionSize: calculations.positionSize,
       marginUtilized: calculations.requiredMargin,
+      estimatedFees: calculations.estimatedLossFees,
       timestamp: new Date().toISOString(),
     });
     // Clear form

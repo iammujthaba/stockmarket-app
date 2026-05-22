@@ -1,7 +1,8 @@
 import { useState } from 'react';
+import CloseTradeModal from './CloseTradeModal';
 
 export default function CapitalLedger({ trades, onCloseTrade, profiles }) {
-  const [confirmId, setConfirmId] = useState(null);
+  const [selectedTradeToClose, setSelectedTradeToClose] = useState(null);
 
   if (!trades || trades.length === 0) {
     return (
@@ -24,16 +25,6 @@ export default function CapitalLedger({ trades, onCloseTrade, profiles }) {
   const cryptoRisk = trades.filter(t => t.market === 'crypto').reduce((s, t) => s + t.totalRisk, 0);
 
   const getCurrency = (market) => (market === 'indian' ? '₹' : '$');
-
-  const handleClose = (id) => {
-    if (confirmId === id) {
-      onCloseTrade(id);
-      setConfirmId(null);
-    } else {
-      setConfirmId(id);
-      setTimeout(() => setConfirmId(null), 3000);
-    }
-  };
 
   const formatTime = (iso) => {
     const d = new Date(iso);
@@ -90,14 +81,10 @@ export default function CapitalLedger({ trades, onCloseTrade, profiles }) {
               <div className="flex items-center gap-2">
                 <span className="text-gray-600 text-xs">{formatTime(trade.timestamp)}</span>
                 <button
-                  onClick={() => handleClose(trade.id)}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
-                    confirmId === trade.id
-                      ? 'bg-red-500/20 text-red-400 border border-red-500/30 animate-pulse'
-                      : 'bg-gray-800 text-gray-400 hover:bg-red-500/10 hover:text-red-400 border border-gray-700/50 hover:border-red-500/30'
-                  }`}
+                  onClick={() => setSelectedTradeToClose(trade)}
+                  className="px-3 py-1.5 rounded-lg text-xs font-medium bg-gray-800 text-gray-400 hover:bg-red-500/10 hover:text-red-400 border border-gray-700/50 hover:border-red-500/30 transition-all active:scale-[0.97]"
                 >
-                  {confirmId === trade.id ? 'Confirm Close' : 'Close'}
+                  Close
                 </button>
               </div>
             </div>
@@ -144,6 +131,18 @@ export default function CapitalLedger({ trades, onCloseTrade, profiles }) {
           </div>
         ))}
       </div>
+
+      {selectedTradeToClose && (
+        <CloseTradeModal
+          trade={selectedTradeToClose}
+          onClose={(id) => {
+            if (id) {
+              onCloseTrade(id);
+            }
+            setSelectedTradeToClose(null);
+          }}
+        />
+      )}
     </div>
   );
 }
