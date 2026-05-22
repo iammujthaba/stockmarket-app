@@ -131,17 +131,6 @@ export function calculateBinanceFees(entryPrice, exitPrice, quantity, leverage =
 }
 
 
-// ─────────────────────────────────────────────
-//  Dispatcher — pick the right calculator
-// ─────────────────────────────────────────────
-
-/**
- * Routes to the correct fee calculator based on market profile.
- *
- * @param {'indian' | 'crypto'} market
- * @param {object} params - { entryPrice, exitPrice, quantity, leverage? }
- * @returns {{ breakdown: object, totalFees: number }}
- */
 export function calculateFees(market, { entryPrice, exitPrice, quantity, leverage, tradeType }) {
   switch (market) {
     case 'indian':
@@ -154,4 +143,13 @@ export function calculateFees(market, { entryPrice, exitPrice, quantity, leverag
   }
 }
 
-export default { calculateDhanFees, calculateBinanceFees, calculateFees };
+export function calculateTradeFees(market, tradeType, entry, exit, quantity, activeLeverage) {
+  if (market === 'indian') {
+    return calculateDhanFees(entry, exit, quantity, tradeType).totalFees;
+  } else if (market === 'crypto') {
+    return calculateBinanceFees(entry, exit, quantity, activeLeverage).totalFees;
+  }
+  return 0;
+}
+
+export default { calculateDhanFees, calculateBinanceFees, calculateFees, calculateTradeFees };

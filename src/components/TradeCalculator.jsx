@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from 'react';
-import { calculateFees } from '../utils/FeeCalculator';
+import { calculateFees, calculateTradeFees } from '../utils/FeeCalculator';
 
 export default function TradeCalculator({ market, profile, onLogTrade, tradeType, setTradeType, availableBalance, activeLeverage }) {
   const [direction, setDirection] = useState('long');
@@ -45,34 +45,102 @@ export default function TradeCalculator({ market, profile, onLogTrade, tradeType
       ? (profile.accountBalance * profile.riskPercent) / 100
       : profile.fixedRisk;
 
-    // Base quantity
+    // Base quantity calculation with snapping for Indian lot size
     let rawQuantity = riskAmount / riskPerShare;
-
-    // Quantity rounding by market
-    let quantity;
-    if (market === 'crypto') {
-      quantity = parseFloat(rawQuantity.toFixed(6)); // Allow fractional
-    } else {
-      if (useLotSize && lotSizeOverride > 1) {
-        quantity = Math.floor(rawQuantity / lotSizeOverride) * lotSizeOverride;
-      } else {
-        quantity = Math.floor(rawQuantity);
-      }
+    if (market === 'indian' && useLotSize && lotSizeOverride > 0) {
+      rawQuantity = Math.floor(rawQuantity / lotSizeOverride) * lotSizeOverride;
+    } else if (market === 'indian') {
+      rawQuantity = Math.floor(rawQuantity);
     }
 
-    // Target price
-    const targetPrice = direction === 'long'
-      ? entry + (riskPerShare * rr)
-      : entry - (riskPerShare * rr);
+    // Downward iteration loop to adjust for round-trip fee drag
+    let finalQuantity = rawQuantity;
+    let loopCountQty = 0;
+    const maxLoopsQty = 1000;
+    const lotSize = (market === 'indian' && useLotSize && lotSizeOverride > 0) ? lotSizeOverride : 1;
 
-    // Actual risk with the rounded quantity
-    const actualRisk = riskPerShare * quantity;
+    while (loopCountQty < maxLoopsQty) {
+      const roundTripLossFees = calculateTradeFees(market, tradeType, entry, sl, finalQuantity, activeLeverage);
+      const netLoss = (finalQuantity * riskPerShare) + roundTripLossFees;
 
-    // Position size
-    const positionSize = entry * quantity;
+      if (netLoss <= riskAmount) {
+        break;
+      }
 
-    // Potential reward
-    const potentialReward = Math.abs(targetPrice - entry) * quantity;
+      // Decrement quantity
+      if (market === 'indian') {
+        finalQuantity -= lotSize;
+        if (finalQuantity < lotSize) {
+          finalQuantity = 0;
+          break;
+        }
+      } else {
+        // crypto: reduce by 1% micro-steps
+        finalQuantity *= 0.99;
+        if (finalQuantity <= 0.000001) {
+          finalQuantity = 0;
+          break;
+        }
+      }
+      loopCountQty++;
+    }
+
+    // Precision adjustment for crypto final quantity
+    if (market === 'crypto' && finalQuantity > 0) {
+      finalQuantity = parseFloat(finalQuantity.toFixed(6));
+    }
+
+    // Upward iteration loop for target price to absorb profit-taking fees
+    let finalTarget = entry;
+    let roundTripWinFees = 0;
+    let netProfit = 0;
+
+    if (finalQuantity > 0) {
+      const requiredNetProfit = riskAmount * rr;
+      let rawTarget = direction === 'long' ? (entry + riskPerShare * rr) : (entry - riskPerShare * rr);
+
+      let stepSize;
+      if (market === 'indian') {
+        stepSize = 0.05; // NSE standard tick size
+      } else {
+        // Dynamic step size for crypto based on asset value
+        stepSize = entry > 1000 ? 0.1 : 
+                   entry > 1 ? 0.01 : 
+                   entry * 0.001; 
+      }
+
+      let loopCountTarget = 0;
+      const maxLoopsTarget = 5000;
+
+      while (loopCountTarget < maxLoopsTarget) {
+        roundTripWinFees = calculateTradeFees(market, tradeType, entry, rawTarget, finalQuantity, activeLeverage);
+        const grossProfit = finalQuantity * Math.abs(rawTarget - entry);
+        netProfit = grossProfit - roundTripWinFees;
+
+        if (netProfit >= requiredNetProfit) {
+          break;
+        }
+
+        // Expand the target further away from entry
+        if (direction === 'long') {
+          rawTarget += stepSize;
+        } else {
+          rawTarget -= stepSize;
+        }
+
+        if (rawTarget <= 0) {
+          rawTarget = 0;
+          break;
+        }
+        loopCountTarget++;
+      }
+      finalTarget = rawTarget;
+    }
+
+    // Recalculate metrics based on final values
+    const actualRisk = riskPerShare * finalQuantity;
+    const positionSize = entry * finalQuantity;
+    const potentialReward = Math.abs(finalTarget - entry) * finalQuantity;
 
     // Active Leverage & Buying Power / Margin
     const requiredMargin = positionSize / activeLeverage;
@@ -80,42 +148,39 @@ export default function TradeCalculator({ market, profile, onLogTrade, tradeType
     const isMarginExceeded = requiredMargin > availableBalance;
 
     // Warning 1: Risk Capacity Exceeded (Quantity = 0 / calculatedQuantity < 1)
-    const isRiskCapacityExceeded = market === 'indian' ? (quantity < 1) : (quantity <= 0);
+    const isRiskCapacityExceeded = market === 'indian' ? (finalQuantity < 1) : (finalQuantity <= 0);
 
     // Warning 2: Liquidation Risk (Crypto Leveraged Trades)
     const bankruptcyDistance = entry / activeLeverage;
     const isLiquidationRisk = (market === 'crypto' && activeLeverage > 1 && riskPerShare >= bankruptcyDistance);
 
-    // Fee calculations
+    // Fee calculations for UI breakdown
     const entryToTarget = calculateFees(market, {
       entryPrice: entry,
-      exitPrice: targetPrice,
-      quantity,
-      leverage: profile.leverage || 1,
+      exitPrice: finalTarget,
+      quantity: finalQuantity,
+      leverage: activeLeverage,
       tradeType,
     });
 
     const entryToSL = calculateFees(market, {
       entryPrice: entry,
       exitPrice: sl,
-      quantity,
-      leverage: profile.leverage || 1,
+      quantity: finalQuantity,
+      leverage: activeLeverage,
       tradeType,
     });
 
-    // Net P&L after fees
-    const netProfit = potentialReward - entryToTarget.totalFees;
-    const netLoss   = actualRisk + entryToSL.totalFees;
-
-    // Effective R:R after fees
+    const finalLossFees = calculateTradeFees(market, tradeType, entry, sl, finalQuantity, activeLeverage);
+    const netLoss = actualRisk + finalLossFees;
     const effectiveRR = netLoss > 0 ? (netProfit / netLoss) : 0;
 
     return {
       riskPerShare,
       riskAmount,
       rawQuantity,
-      quantity,
-      targetPrice,
+      quantity: finalQuantity,
+      targetPrice: finalTarget,
       actualRisk,
       positionSize,
       potentialReward,
@@ -130,6 +195,7 @@ export default function TradeCalculator({ market, profile, onLogTrade, tradeType
       isMarginExceeded,
       isRiskCapacityExceeded,
       isLiquidationRisk,
+      estimatedLossFees: finalLossFees,
     };
   }, [entryPrice, stopLoss, rrRatio, direction, market, profile, useLotSize, lotSizeOverride, tradeType, availableBalance, activeLeverage]);
 
@@ -302,6 +368,9 @@ export default function TradeCalculator({ market, profile, onLogTrade, tradeType
                   {Math.floor(calculations.quantity / lotSizeOverride)} lot{Math.floor(calculations.quantity / lotSizeOverride) !== 1 ? 's' : ''} × {lotSizeOverride}
                 </p>
               )}
+              <p className="text-[10px] text-cyan-500/40 mt-1.5 font-mono select-none">
+                Estimated Fee Drag: {currency}{calculations.estimatedLossFees.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: market === 'crypto' ? 4 : 2 })}
+              </p>
             </div>
 
             <div className={`bg-gradient-to-br ${
