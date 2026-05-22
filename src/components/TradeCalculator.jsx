@@ -159,6 +159,12 @@ export default function TradeCalculator({ market, profile, onLogTrade, tradeType
 
   return (
     <div className="space-y-5">
+      {/* R:R Ratio Badge on Card Border */}
+      <div className="absolute -top-2.5 left-5 sm:left-6 px-2 bg-[#080a0f] text-xs font-semibold text-gray-400 uppercase tracking-wider select-none z-10 flex items-center gap-1.5">
+        <span className="text-cyan-400 font-mono">1:{rrRatio || '0'}</span>
+        <span className="text-gray-400">R:R Ratio</span>
+      </div>
+
       {/* Direction Toggle */}
       <div className="flex gap-3">
         <button
@@ -261,47 +267,18 @@ export default function TradeCalculator({ market, profile, onLogTrade, tradeType
           />
         </div>
 
-        {/* Risk:Reward Ratio */}
-        <div className="space-y-1.5">
-          <label className="text-xs font-medium text-gray-400 uppercase tracking-wider">R:R Ratio</label>
-          <div className="flex items-center bg-gray-800/50 border border-gray-700/50 rounded-xl px-4 py-2.5 focus-within:border-cyan-500/50 focus-within:ring-1 focus-within:ring-cyan-500/20 transition-all">
-            <span className="text-gray-500 font-mono select-none mr-2 whitespace-nowrap shrink-0">1 :</span>
-            <input
-              type="number"
-              step="0.1"
-              min="0.1"
-              value={rrRatio}
-              onChange={(e) => setRrRatio(e.target.value)}
-              className="flex-1 min-w-0 bg-transparent text-white placeholder-gray-600 focus:outline-none font-mono"
-            />
-          </div>
-        </div>
 
-        {/* Lot Size (Indian only) */}
-        {market === 'indian' && (
+
+        {/* Lot Size (Indian only, shown only when enabled in settings) */}
+        {market === 'indian' && useLotSize && (
           <div className="space-y-1.5">
-            <div className="flex items-center justify-between">
-              <label className="text-xs font-medium text-gray-400 uppercase tracking-wider">Lot Size</label>
-              <button
-                onClick={() => setUseLotSize(!useLotSize)}
-                className={`relative w-9 h-5 rounded-full transition-colors duration-200 ${
-                  useLotSize ? 'bg-cyan-500' : 'bg-gray-600'
-                }`}
-              >
-                <span className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform duration-200 ${
-                  useLotSize ? 'translate-x-4' : 'translate-x-0'
-                }`} />
-              </button>
-            </div>
+            <label className="text-xs font-medium text-gray-400 uppercase tracking-wider">Lot Size</label>
             <input
               type="number"
               min="1"
               value={lotSizeOverride}
               onChange={(e) => setLotSizeOverride(Math.max(1, parseInt(e.target.value) || 1))}
-              disabled={!useLotSize}
-              className={`w-full px-4 py-2.5 bg-gray-800/50 border border-gray-700/50 rounded-xl text-white placeholder-gray-600 focus:outline-none focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/20 transition-all font-mono ${
-                !useLotSize ? 'opacity-40 cursor-not-allowed' : ''
-              }`}
+              className="w-full px-4 py-2.5 bg-gray-800/50 border border-gray-700/50 rounded-xl text-white placeholder-gray-600 focus:outline-none focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/20 transition-all font-mono"
             />
           </div>
         )}

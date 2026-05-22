@@ -62,8 +62,65 @@ export default function App() {
     setActiveTrades((prev) => prev.filter((t) => t.id !== id));
   };
 
+  // Touch swipe detection for market switching
+  const [touchStart, setTouchStart] = useState(null);
+  const [touchEnd, setTouchEnd] = useState(null);
+
+  const onTouchStart = (e) => {
+    if (settingsOpen) return;
+    const target = e.target;
+    // Don't trigger swipe if user starts touch inside an input, textarea, or button
+    if (
+      target.tagName === 'INPUT' ||
+      target.tagName === 'TEXTAREA' ||
+      target.tagName === 'BUTTON' ||
+      target.closest('button') ||
+      target.closest('input')
+    ) {
+      setTouchStart(null);
+      return;
+    }
+    setTouchEnd(null);
+    setTouchStart({
+      x: e.targetTouches[0].clientX,
+      y: e.targetTouches[0].clientY,
+    });
+  };
+
+  const onTouchMove = (e) => {
+    if (settingsOpen || !touchStart) return;
+    setTouchEnd({
+      x: e.targetTouches[0].clientX,
+      y: e.targetTouches[0].clientY,
+    });
+  };
+
+  const onTouchEnd = () => {
+    if (settingsOpen || !touchStart || !touchEnd) return;
+    const distanceX = touchStart.x - touchEnd.x;
+    const distanceY = touchStart.y - touchEnd.y;
+    const minSwipeDistance = 75; // minimum swipe distance in px
+
+    // Check that horizontal swipe is dominant and meets threshold
+    if (Math.abs(distanceX) > Math.abs(distanceY) && Math.abs(distanceX) > minSwipeDistance) {
+      const isLeftSwipe = distanceX > 0;
+      if (isLeftSwipe && market === 'indian') {
+        setMarket('crypto');
+      } else if (!isLeftSwipe && market === 'crypto') {
+        setMarket('indian');
+      }
+    }
+    setTouchStart(null);
+    setTouchEnd(null);
+  };
+
   return (
-    <div className="min-h-screen bg-[#080a0f] text-white">
+    <div
+      onTouchStart={onTouchStart}
+      onTouchMove={onTouchMove}
+      onTouchEnd={onTouchEnd}
+      className="min-h-screen bg-[#080a0f] text-white"
+    >
       {/* Ambient glow effects */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
         <div className="absolute -top-40 -right-40 w-80 h-80 bg-cyan-500/5 rounded-full blur-3xl" />
@@ -149,7 +206,7 @@ export default function App() {
 
         {/* Calculator Card */}
         <section className="mb-8">
-          <div className="bg-[#0c0e14]/80 border border-gray-700/30 rounded-2xl p-5 sm:p-6 backdrop-blur-sm shadow-2xl shadow-black/20">
+          <div className="relative bg-[#0c0e14]/80 border border-gray-700/30 rounded-2xl p-5 sm:p-6 backdrop-blur-sm shadow-2xl shadow-black/20">
             <TradeCalculator
               market={market}
               profile={currentProfile}
