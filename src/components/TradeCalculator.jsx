@@ -219,6 +219,12 @@ export default function TradeCalculator({ market, profile, onLogTrade, tradeType
       positionSize: calculations.positionSize,
       marginUtilized: calculations.requiredMargin,
       estimatedFees: calculations.estimatedLossFees,
+      tradeType: market === 'indian' ? tradeType : 'N/A',
+      stopLossPrice: parseFloat(stopLoss),
+      positionValue: calculations.positionSize,
+      grossRisk: calculations.grossRisk,
+      grossReward: calculations.grossReward,
+      effectiveRR: calculations.effectiveRR,
       timestamp: new Date().toISOString(),
     });
     // Clear form

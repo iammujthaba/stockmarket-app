@@ -43,12 +43,18 @@ export default function CloseTradeModal({ trade, onClose }) {
         market: trade.market,
         symbol: trade.symbol,
         direction: trade.direction,
-        result: outcome,
         entryPrice: trade.entry,
+        stopLossPrice: trade.stopLossPrice,
         exitPrice: parsedExitPrice,
+        result: outcome,
+        tradeType: trade.tradeType,
         quantity: trade.quantity,
-        realizedPnL: realizedPnL,
-        estimatedFees: trade.estimatedFees || 0
+        positionValue: trade.positionValue,
+        grossRisk: trade.grossRisk,
+        grossReward: trade.grossReward,
+        effectiveRR: trade.effectiveRR,
+        estimatedFees: trade.estimatedFees,
+        netPnL: realizedPnL
       })
     })
       .then(() => {
