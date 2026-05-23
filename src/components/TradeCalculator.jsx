@@ -104,9 +104,9 @@ export default function TradeCalculator({ market, profile, onLogTrade, tradeType
         stepSize = 0.05; // NSE standard tick size
       } else {
         // Dynamic step size for crypto based on asset value
-        stepSize = entry > 1000 ? 0.1 : 
-                   entry > 1 ? 0.01 : 
-                   entry * 0.001; 
+        stepSize = entry > 1000 ? 0.1 :
+          entry > 1 ? 0.01 :
+            entry * 0.001;
       }
 
       let loopCountTarget = 0;
@@ -196,6 +196,11 @@ export default function TradeCalculator({ market, profile, onLogTrade, tradeType
       isRiskCapacityExceeded,
       isLiquidationRisk,
       estimatedLossFees: finalLossFees,
+      grossRisk: actualRisk,
+      grossReward: potentialReward,
+      finalQuantity,
+      roundTripLossFees: finalLossFees,
+      roundTripWinFees: entryToTarget.totalFees,
     };
   }, [entryPrice, stopLoss, rrRatio, direction, market, profile, useLotSize, lotSizeOverride, tradeType, availableBalance, activeLeverage]);
 
@@ -236,11 +241,10 @@ export default function TradeCalculator({ market, profile, onLogTrade, tradeType
       <div className="flex gap-3">
         <button
           onClick={() => setDirection('long')}
-          className={`flex-1 py-3 rounded-xl font-semibold text-sm tracking-wide transition-all duration-300 ${
-            direction === 'long'
+          className={`flex-1 py-3 rounded-xl font-semibold text-sm tracking-wide transition-all duration-300 ${direction === 'long'
               ? 'bg-emerald-500/15 text-emerald-400 border-2 border-emerald-500/40 shadow-lg shadow-emerald-500/10'
               : 'bg-gray-800/40 text-gray-500 border-2 border-transparent hover:border-gray-700 hover:text-gray-400'
-          }`}
+            }`}
         >
           <span className="flex items-center justify-center gap-2">
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
@@ -251,11 +255,10 @@ export default function TradeCalculator({ market, profile, onLogTrade, tradeType
         </button>
         <button
           onClick={() => setDirection('short')}
-          className={`flex-1 py-3 rounded-xl font-semibold text-sm tracking-wide transition-all duration-300 ${
-            direction === 'short'
+          className={`flex-1 py-3 rounded-xl font-semibold text-sm tracking-wide transition-all duration-300 ${direction === 'short'
               ? 'bg-red-500/15 text-red-400 border-2 border-red-500/40 shadow-lg shadow-red-500/10'
               : 'bg-gray-800/40 text-gray-500 border-2 border-transparent hover:border-gray-700 hover:text-gray-400'
-          }`}
+            }`}
         >
           <span className="flex items-center justify-center gap-2">
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
@@ -272,22 +275,20 @@ export default function TradeCalculator({ market, profile, onLogTrade, tradeType
           <button
             type="button"
             onClick={() => setTradeType('intraday')}
-            className={`flex-1 py-2 text-xs font-semibold rounded-lg tracking-wider transition-all duration-200 ${
-              tradeType === 'intraday'
+            className={`flex-1 py-2 text-xs font-semibold rounded-lg tracking-wider transition-all duration-200 ${tradeType === 'intraday'
                 ? 'bg-cyan-500/15 text-cyan-400 border border-cyan-500/30 shadow-sm'
                 : 'text-gray-400 hover:text-gray-300 border border-transparent'
-            }`}
+              }`}
           >
             INTRADAY
           </button>
           <button
             type="button"
             onClick={() => setTradeType('delivery')}
-            className={`flex-1 py-2 text-xs font-semibold rounded-lg tracking-wider transition-all duration-200 ${
-              tradeType === 'delivery'
+            className={`flex-1 py-2 text-xs font-semibold rounded-lg tracking-wider transition-all duration-200 ${tradeType === 'delivery'
                 ? 'bg-purple-500/15 text-purple-400 border border-purple-500/30 shadow-sm'
                 : 'text-gray-400 hover:text-gray-300 border border-transparent'
-            }`}
+              }`}
           >
             DELIVERY
           </button>
@@ -374,19 +375,16 @@ export default function TradeCalculator({ market, profile, onLogTrade, tradeType
               </p>
             </div>
 
-            <div className={`bg-gradient-to-br ${
-              direction === 'long'
+            <div className={`bg-gradient-to-br ${direction === 'long'
                 ? 'from-emerald-500/10 to-emerald-500/5 border-emerald-500/20'
                 : 'from-red-500/10 to-red-500/5 border-red-500/20'
-            } border rounded-2xl p-4 text-center`}>
-              <p className={`text-xs uppercase tracking-wider mb-1 ${
-                direction === 'long' ? 'text-emerald-400/70' : 'text-red-400/70'
-              }`}>
+              } border rounded-2xl p-4 text-center`}>
+              <p className={`text-xs uppercase tracking-wider mb-1 ${direction === 'long' ? 'text-emerald-400/70' : 'text-red-400/70'
+                }`}>
                 Target Price
               </p>
-              <p className={`text-3xl font-bold font-mono tabular-nums ${
-                direction === 'long' ? 'text-emerald-300' : 'text-red-300'
-              }`}>
+              <p className={`text-3xl font-bold font-mono tabular-nums ${direction === 'long' ? 'text-emerald-300' : 'text-red-300'
+                }`}>
                 {calculations.targetPrice.toFixed(2)}
               </p>
             </div>
@@ -427,26 +425,28 @@ export default function TradeCalculator({ market, profile, onLogTrade, tradeType
 
           {/* Secondary metrics */}
           <div className="bg-gray-800/30 border border-gray-700/30 rounded-2xl divide-y divide-gray-700/30">
-            <div className="flex justify-between items-center px-4 py-3">
-              <span className="text-xs text-gray-400">Risk per Share</span>
-              <span className="text-sm text-white font-mono">{currency}{calculations.riskPerShare.toFixed(2)}</span>
-            </div>
+            {/* 1. Position Risk */}
             <div className="flex justify-between items-center px-4 py-3">
               <span className="text-xs text-gray-400">Position Risk</span>
-              <span className="text-sm text-red-400 font-mono">{currency}{calculations.actualRisk.toFixed(2)}</span>
+              <span className="text-sm text-red-400 font-mono">{currency}{calculations.grossRisk.toFixed(2)}</span>
             </div>
+
+            {/* 2. Potential Reward */}
+            <div className="flex justify-between items-center px-4 py-3">
+              <span className="text-xs text-gray-400">Potential Reward (Gross)</span>
+              <span className="text-sm text-emerald-400 font-mono">{currency}{calculations.grossReward.toFixed(2)}</span>
+            </div>
+
+            {/* 3. Position Size */}
             <div className="flex justify-between items-center px-4 py-3">
               <span className="text-xs text-gray-400">Position Size</span>
               <span className="text-sm text-white font-mono">{currency}{calculations.positionSize.toFixed(2)}</span>
             </div>
-            <div className="flex justify-between items-center px-4 py-3">
-              <span className="text-xs text-gray-400">Potential Reward (Gross)</span>
-              <span className="text-sm text-emerald-400 font-mono">{currency}{calculations.potentialReward.toFixed(2)}</span>
-            </div>
 
-            {/* Fee Summary */}
+            {/* 4. Estimated Fees */}
             <div className="px-4 py-3">
               <button
+                type="button"
                 onClick={() => setShowFeeBreakdown(!showFeeBreakdown)}
                 className="w-full flex justify-between items-center group"
               >
@@ -455,7 +455,7 @@ export default function TradeCalculator({ market, profile, onLogTrade, tradeType
                 </span>
                 <span className="flex items-center gap-2">
                   <span className="text-sm text-amber-400 font-mono">
-                    {currency}{calculations.feesOnWin.totalFees.toFixed(2)}
+                    {currency}{calculations.roundTripWinFees.toFixed(2)}
                   </span>
                   <svg
                     className={`w-3 h-3 text-gray-500 transition-transform duration-200 ${showFeeBreakdown ? 'rotate-180' : ''}`}
@@ -481,26 +481,28 @@ export default function TradeCalculator({ market, profile, onLogTrade, tradeType
               )}
             </div>
 
-            {/* Net after fees */}
+            {/* 5. Net Profit */}
             <div className="flex justify-between items-center px-4 py-3">
               <span className="text-xs text-gray-400">Net Profit (after fees)</span>
-              <span className={`text-sm font-mono font-semibold ${
-                calculations.netProfit > 0 ? 'text-emerald-400' : 'text-red-400'
-              }`}>
+              <span className={`text-sm font-mono font-semibold ${calculations.netProfit > 0 ? 'text-emerald-400' : 'text-red-400'
+                }`}>
                 {currency}{calculations.netProfit.toFixed(2)}
               </span>
             </div>
+
+            {/* 6. Net Loss */}
             <div className="flex justify-between items-center px-4 py-3">
               <span className="text-xs text-gray-400">Net Loss (+ fees on SL)</span>
               <span className="text-sm text-red-400 font-mono font-semibold">
                 {currency}{calculations.netLoss.toFixed(2)}
               </span>
             </div>
+
+            {/* 7. Effective R:R */}
             <div className="flex justify-between items-center px-4 py-3 bg-gray-900/30">
               <span className="text-xs font-medium text-gray-300">Effective R:R (after fees)</span>
-              <span className={`text-sm font-bold font-mono ${
-                calculations.effectiveRR >= 1 ? 'text-emerald-400' : 'text-amber-400'
-              }`}>
+              <span className={`text-sm font-bold font-mono ${calculations.effectiveRR >= 1 ? 'text-emerald-400' : 'text-amber-400'
+                }`}>
                 1 : {calculations.effectiveRR.toFixed(2)}
               </span>
             </div>
@@ -510,11 +512,10 @@ export default function TradeCalculator({ market, profile, onLogTrade, tradeType
           <button
             onClick={handleLogTrade}
             disabled={!symbol.trim()}
-            className={`w-full py-3.5 rounded-xl font-semibold text-sm tracking-wide transition-all duration-300 ${
-              symbol.trim()
+            className={`w-full py-3.5 rounded-xl font-semibold text-sm tracking-wide transition-all duration-300 ${symbol.trim()
                 ? 'bg-gradient-to-r from-cyan-500 to-purple-500 hover:from-cyan-400 hover:to-purple-400 text-white shadow-lg shadow-cyan-500/20 hover:shadow-cyan-500/30 active:scale-[0.98]'
                 : 'bg-gray-800 text-gray-600 cursor-not-allowed'
-            }`}
+              }`}
           >
             <span className="flex items-center justify-center gap-2">
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
