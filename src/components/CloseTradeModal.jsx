@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { calculateTradeFees } from '../utils/FeeCalculator';
 
 const GOOGLE_APP_URL = "https://script.google.com/macros/s/AKfycbxhDA4ykFkzejH70uABk-zSr8uXuUuoh7cN5T_vseNdWwMvrZMfAAL_7hLxSJFVnB-1/exec";
 
@@ -27,10 +28,21 @@ export default function CloseTradeModal({ trade, onClose }) {
     onClose(trade.id);
   };
 
-  const parsedExitPrice = parseFloat(exitPrice) || 0;
-  const realizedPnL = trade.direction === 'long'
-    ? (parsedExitPrice - trade.entry) * trade.quantity
-    : (trade.entry - parsedExitPrice) * trade.quantity;
+  const actualExitPrice = exitPrice;
+  const actualFees = calculateTradeFees(
+    trade.market,
+    trade.tradeType || 'intraday',
+    trade.entry,
+    Number(actualExitPrice),
+    trade.quantity,
+    1 // activeLeverage fallback
+  );
+
+  const grossRealizedPnL = trade.direction === 'long'
+    ? (Number(actualExitPrice) - trade.entry) * trade.quantity
+    : (trade.entry - Number(actualExitPrice)) * trade.quantity;
+
+  const trueNetPnL = grossRealizedPnL - actualFees;
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -44,17 +56,19 @@ export default function CloseTradeModal({ trade, onClose }) {
         symbol: trade.symbol,
         direction: trade.direction,
         entryPrice: trade.entry,
-        stopLossPrice: trade.stopLossPrice,
-        exitPrice: parsedExitPrice,
+        stopLossPrice: trade.stopLoss,
+        targetPrice: trade.target,
+        exitPrice: Number(actualExitPrice),
         result: outcome,
-        tradeType: trade.tradeType,
+        tradeType: trade.tradeType || 'N/A',
         quantity: trade.quantity,
         positionValue: trade.positionValue,
         grossRisk: trade.grossRisk,
         grossReward: trade.grossReward,
-        effectiveRR: trade.effectiveRR,
-        estimatedFees: trade.estimatedFees,
-        netPnL: realizedPnL
+        effectiveReward: grossRealizedPnL,
+        effectiveRR: trade.effectiveRR ? `1:${Number(trade.effectiveRR).toFixed(2)}` : 'N/A',
+        actualFees: actualFees,
+        netPnL: trueNetPnL
       })
     })
       .then(() => {
@@ -188,9 +202,9 @@ export default function CloseTradeModal({ trade, onClose }) {
 
             {/* Realized PnL Card */}
             <div className={`p-4 rounded-xl border text-center transition-all ${
-              realizedPnL > 0
+              trueNetPnL > 0
                 ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-300'
-                : realizedPnL < 0
+                : trueNetPnL < 0
                 ? 'bg-red-500/10 border-red-500/20 text-red-300'
                 : 'bg-gray-800/20 border-gray-700/30 text-gray-300'
             }`}>
@@ -198,9 +212,9 @@ export default function CloseTradeModal({ trade, onClose }) {
                 Realized P&L
               </p>
               <p className="text-2xl font-bold font-mono">
-                {realizedPnL > 0 ? '+' : ''}
+                {trueNetPnL > 0 ? '+' : ''}
                 {currency}
-                {realizedPnL.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                {trueNetPnL.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </p>
             </div>
 
