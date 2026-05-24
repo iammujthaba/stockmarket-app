@@ -188,7 +188,7 @@ export default function App() {
           <div className="mt-3 flex flex-wrap gap-2">
             <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-gray-800/40 border border-gray-700/30 rounded-lg text-xs text-gray-400">
               <span className="w-1.5 h-1.5 rounded-full bg-cyan-500" />
-              Balance: {currentProfile.currency}{availableBalance.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })}
+              Balance: {currentProfile.currency}{availableBalance.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
             </span>
             <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-gray-800/40 border border-gray-700/30 rounded-lg text-xs text-gray-400">
               <span className="w-1.5 h-1.5 rounded-full bg-red-500" />
