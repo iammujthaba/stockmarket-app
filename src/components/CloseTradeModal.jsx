@@ -18,6 +18,40 @@ export default function CloseTradeModal({ trade, onClose }) {
       defaultExit = trade.target;
     } else if (selectedOutcome === 'loss') {
       defaultExit = trade.stopLoss;
+    } else if (selectedOutcome === 'breakeven') {
+      let exit = trade.entry;
+      // Define tick step size
+      let stepSize = trade.market === 'indian' ? 0.05 : (trade.entry > 1000 ? 0.1 : 0.001);
+      let iter = 0;
+      let maxIter = 5000;
+
+      while (iter < maxIter) {
+        // Calculate fees for current estimated exit
+        let fees = calculateTradeFees(
+          trade.market,
+          trade.tradeType || 'intraday',
+          trade.entry,
+          exit,
+          trade.quantity,
+          trade.activeLeverage || 1
+        );
+
+        // Calculate gross PnL
+        let grossPnL = trade.direction === 'long'
+          ? (exit - trade.entry) * trade.quantity
+          : (trade.entry - exit) * trade.quantity;
+
+        // If Net PnL covers fees, break loop
+        if (grossPnL - fees >= 0) {
+          break;
+        }
+
+        // Step the price in the profitable direction
+        exit = trade.direction === 'long' ? exit + stepSize : exit - stepSize;
+        iter++;
+      }
+
+      defaultExit = Number(exit).toFixed(trade.market === 'crypto' ? 4 : 2);
     }
     setExitPrice(defaultExit.toString());
     setStep(2);

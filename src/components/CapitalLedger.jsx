@@ -18,11 +18,11 @@ export default function CapitalLedger({ trades, onCloseTrade, profiles }) {
     );
   }
 
-  const totalRisk = trades.reduce((sum, t) => sum + t.totalRisk, 0);
+  const totalRisk = trades.reduce((sum, t) => sum + (t.netLoss || t.totalRisk), 0);
 
   // Group by market for grouped currency display
-  const indianRisk = trades.filter(t => t.market === 'indian').reduce((s, t) => s + t.totalRisk, 0);
-  const cryptoRisk = trades.filter(t => t.market === 'crypto').reduce((s, t) => s + t.totalRisk, 0);
+  const indianRisk = trades.filter(t => t.market === 'indian').reduce((s, t) => s + (t.netLoss || t.totalRisk), 0);
+  const cryptoRisk = trades.filter(t => t.market === 'crypto').reduce((s, t) => s + (t.netLoss || t.totalRisk), 0);
 
   const getCurrency = (market) => (market === 'indian' ? '₹' : '$');
 
@@ -120,12 +120,12 @@ export default function CapitalLedger({ trades, onCloseTrade, profiles }) {
                 <div
                   className="h-full bg-gradient-to-r from-red-500 to-red-400 rounded-full transition-all duration-500"
                   style={{
-                    width: `${Math.min(100, (trade.totalRisk / (profiles[trade.market]?.accountBalance || 1)) * 100)}%`,
+                    width: `${Math.min(100, ((trade.netLoss || trade.totalRisk) / (profiles[trade.market]?.accountBalance || 1)) * 100)}%`,
                   }}
                 />
               </div>
               <span className="text-red-400 text-xs font-mono whitespace-nowrap">
-                {getCurrency(trade.market)}{trade.totalRisk.toFixed(2)} risk
+                {getCurrency(trade.market)}{(trade.netLoss || trade.totalRisk).toFixed(2)} risk
               </span>
             </div>
           </div>
