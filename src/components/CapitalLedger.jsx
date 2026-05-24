@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import CloseTradeModal from './CloseTradeModal';
+import TradeDetailsModal from './TradeDetailsModal';
 
 export default function CapitalLedger({ trades, onCloseTrade, profiles }) {
   const [selectedTradeToClose, setSelectedTradeToClose] = useState(null);
+  const [selectedTradeDetails, setSelectedTradeDetails] = useState(null);
 
   if (!trades || trades.length === 0) {
     return (
@@ -63,7 +65,8 @@ export default function CapitalLedger({ trades, onCloseTrade, profiles }) {
         {trades.map((trade) => (
           <div
             key={trade.id}
-            className="bg-gray-800/20 border border-gray-700/30 rounded-xl p-4 hover:bg-gray-800/30 transition-colors group"
+            onClick={() => setSelectedTradeDetails(trade)}
+            className="bg-gray-800/20 border border-gray-700/30 rounded-xl p-4 hover:bg-gray-800/30 transition-colors group cursor-pointer"
           >
             {/* Top row */}
             <div className="flex items-center justify-between mb-3">
@@ -81,7 +84,10 @@ export default function CapitalLedger({ trades, onCloseTrade, profiles }) {
               <div className="flex items-center gap-2">
                 <span className="text-gray-600 text-xs">{formatTime(trade.timestamp)}</span>
                 <button
-                  onClick={() => setSelectedTradeToClose(trade)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setSelectedTradeToClose(trade);
+                  }}
                   className="px-3 py-1.5 rounded-lg text-xs font-medium bg-gray-800 text-gray-400 hover:bg-red-500/10 hover:text-red-400 border border-gray-700/50 hover:border-red-500/30 transition-all active:scale-[0.97]"
                 >
                   Close
@@ -141,6 +147,13 @@ export default function CapitalLedger({ trades, onCloseTrade, profiles }) {
             }
             setSelectedTradeToClose(null);
           }}
+        />
+      )}
+
+      {selectedTradeDetails && (
+        <TradeDetailsModal
+          trade={selectedTradeDetails}
+          onClose={() => setSelectedTradeDetails(null)}
         />
       )}
     </div>
