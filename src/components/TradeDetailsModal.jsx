@@ -102,7 +102,6 @@ export default function TradeDetailsModal({ trade, onClose }) {
               {trade.direction}
             </span>
             <span className="text-gray-500 text-xs font-mono flex items-center gap-1.5">
-              <span>•</span>
               {trade.market === 'indian' ? (
                 <span className="flex items-center gap-1">🇮🇳 Stock</span>
               ) : (
