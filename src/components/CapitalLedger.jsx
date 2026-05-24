@@ -31,7 +31,7 @@ export default function CapitalLedger({ trades, onCloseTrade, profiles }) {
 
   const formatTime = (iso) => {
     const d = new Date(iso);
-    return d.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+    return d.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }).toUpperCase();
   };
 
   return (
@@ -58,48 +58,42 @@ export default function CapitalLedger({ trades, onCloseTrade, profiles }) {
       <div className="flex bg-gray-900/50 border border-gray-800/40 rounded-xl p-1 mb-4 mt-4">
         <button
           onClick={() => setMarketFilter('all')}
-          className={`flex-1 py-2 text-xs font-semibold rounded-lg tracking-wider transition-all duration-200 flex items-center justify-center gap-1.5 ${
-            marketFilter === 'all'
+          className={`flex-1 py-2 text-xs font-semibold rounded-lg tracking-wider transition-all duration-200 flex items-center justify-center gap-1.5 ${marketFilter === 'all'
               ? 'bg-gray-850 text-white shadow-sm border border-gray-700/30'
               : 'text-gray-400 hover:text-gray-200'
-          }`}
+            }`}
         >
           <span>All</span>
-          <span className={`px-1.5 py-0.5 rounded-md text-[10px] font-bold font-mono ${
-            marketFilter === 'all' ? 'bg-cyan-500/10 text-cyan-400' : 'bg-gray-800 text-gray-500'
-          }`}>
+          <span className={`px-1.5 py-0.5 rounded-md text-[10px] font-bold font-mono ${marketFilter === 'all' ? 'bg-cyan-500/10 text-cyan-400' : 'bg-gray-800 text-gray-500'
+            }`}>
             {trades.length}
           </span>
         </button>
 
         <button
           onClick={() => setMarketFilter('indian')}
-          className={`flex-1 py-2 text-xs font-semibold rounded-lg tracking-wider transition-all duration-200 flex items-center justify-center gap-1.5 ${
-            marketFilter === 'indian'
+          className={`flex-1 py-2 text-xs font-semibold rounded-lg tracking-wider transition-all duration-200 flex items-center justify-center gap-1.5 ${marketFilter === 'indian'
               ? 'bg-gray-850 text-white shadow-sm border border-gray-700/30'
               : 'text-gray-400 hover:text-gray-200'
-          }`}
+            }`}
         >
           <span>🇮🇳 Indian</span>
-          <span className={`px-1.5 py-0.5 rounded-md text-[10px] font-bold font-mono ${
-            marketFilter === 'indian' ? 'bg-cyan-500/10 text-cyan-400' : 'bg-gray-800 text-gray-500'
-          }`}>
+          <span className={`px-1.5 py-0.5 rounded-md text-[10px] font-bold font-mono ${marketFilter === 'indian' ? 'bg-cyan-500/10 text-cyan-400' : 'bg-gray-800 text-gray-500'
+            }`}>
             {trades.filter(t => t.market === 'indian').length}
           </span>
         </button>
 
         <button
           onClick={() => setMarketFilter('crypto')}
-          className={`flex-1 py-2 text-xs font-semibold rounded-lg tracking-wider transition-all duration-200 flex items-center justify-center gap-1.5 ${
-            marketFilter === 'crypto'
+          className={`flex-1 py-2 text-xs font-semibold rounded-lg tracking-wider transition-all duration-200 flex items-center justify-center gap-1.5 ${marketFilter === 'crypto'
               ? 'bg-gray-850 text-white shadow-sm border border-gray-700/30'
               : 'text-gray-400 hover:text-gray-200'
-          }`}
+            }`}
         >
           <span>🌐 Crypto</span>
-          <span className={`px-1.5 py-0.5 rounded-md text-[10px] font-bold font-mono ${
-            marketFilter === 'crypto' ? 'bg-cyan-500/10 text-cyan-400' : 'bg-gray-800 text-gray-500'
-          }`}>
+          <span className={`px-1.5 py-0.5 rounded-md text-[10px] font-bold font-mono ${marketFilter === 'crypto' ? 'bg-cyan-500/10 text-cyan-400' : 'bg-gray-800 text-gray-500'
+            }`}>
             {trades.filter(t => t.market === 'crypto').length}
           </span>
         </button>
@@ -121,31 +115,21 @@ export default function CapitalLedger({ trades, onCloseTrade, profiles }) {
                 className="bg-gray-800/10 border border-gray-800/60 rounded-xl p-4 hover:bg-gray-800/25 transition-all group cursor-pointer"
               >
                 {/* Top row */}
-                <div className="flex items-center justify-between mb-3.5">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span className={`px-1.5 py-0.5 rounded text-[9px] font-extrabold uppercase tracking-wider ${
-                      trade.direction === 'long'
+                <div className="flex items-center justify-between mb-3 gap-3">
+                  <div className="flex items-center gap-2 min-w-0 flex-1">
+                    <span className={`px-1.5 py-0.5 rounded text-[9px] font-extrabold uppercase tracking-wider shrink-0 ${trade.direction === 'long'
                         ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/10'
                         : 'bg-red-500/10 text-red-400 border border-red-500/10'
-                    }`}>
+                      }`}>
                       {trade.direction}
                     </span>
-                    <span className="text-white font-bold font-mono text-sm tracking-tight">{trade.symbol}</span>
-                    <span className="text-[10px] text-gray-500 font-medium font-mono flex items-center gap-1">
-                      {trade.market === 'indian' ? '🇮🇳 Stock' : '🌐 Crypto'}
+                    <span className="text-white font-bold font-mono text-sm tracking-tight truncate flex-1 min-w-0">
+                      {trade.symbol}
                     </span>
                   </div>
-                  <div className="flex items-center gap-2.5">
-                    <span className="text-gray-500 text-[10px] font-mono">{formatTime(trade.timestamp)}</span>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setSelectedTradeToClose(trade);
-                      }}
-                      className="px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-gray-850 hover:bg-red-500/10 hover:text-red-400 border border-gray-700/50 hover:border-red-500/30 transition-all active:scale-[0.97] text-gray-400"
-                    >
-                      Close
-                    </button>
+                  <div className="flex items-center gap-1 text-gray-400 font-mono text-xs shrink-0 select-none">
+                    <span>⏱</span>
+                    <span>{formatTime(trade.timestamp)}</span>
                   </div>
                 </div>
 
@@ -180,22 +164,23 @@ export default function CapitalLedger({ trades, onCloseTrade, profiles }) {
                   </div>
                 </div>
 
-                {/* Risk Indicator Widget */}
-                <div className="mt-3.5 pt-2 border-t border-gray-800/30">
-                  <div className="flex justify-between items-center text-[10px] font-mono mb-1.5">
-                    <span className="text-gray-500 font-medium">Risk Exposure</span>
+                {/* Risk Footer Refactor (Bottom) */}
+                <div className="flex justify-between items-center mt-3 pt-2.5 border-t border-gray-800/30">
+                  <div className="font-mono text-xs text-gray-400">
+                    <span className="text-gray-500 font-medium">Net Risk:</span>{' '}
                     <span className="text-red-400 font-bold">
                       {getCurrency(trade.market)}{(trade.netLoss || trade.totalRisk).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </span>
                   </div>
-                  <div className="h-1.5 bg-gray-900 rounded-full overflow-hidden">
-                    <div
-                      className="h-full bg-gradient-to-r from-red-500 to-red-400 rounded-full transition-all duration-500"
-                      style={{
-                        width: `${Math.min(100, ((trade.netLoss || trade.totalRisk) / (profiles[trade.market]?.accountBalance || 1)) * 100)}%`,
-                      }}
-                    />
-                  </div>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSelectedTradeToClose(trade);
+                    }}
+                    className="px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-gray-850 hover:bg-red-500/10 hover:text-red-400 border border-gray-700/50 hover:border-red-500/30 transition-all active:scale-[0.97] text-gray-400"
+                  >
+                    Close
+                  </button>
                 </div>
               </div>
             ))}
