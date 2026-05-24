@@ -10,13 +10,10 @@ export default function TradeDetailsModal({ trade, onClose }) {
     if (!isoString) return 'N/A';
     try {
       const date = new Date(isoString);
-      return date.toLocaleString('en-IN', {
+      return date.toLocaleDateString('en-IN', {
         day: '2-digit',
         month: 'short',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: true
+        year: 'numeric'
       });
     } catch (e) {
       return 'Invalid Date';
@@ -104,7 +101,14 @@ export default function TradeDetailsModal({ trade, onClose }) {
             }`}>
               {trade.direction}
             </span>
-            <span className="text-gray-500 text-xs font-mono">• {trade.market === 'indian' ? 'Indian Stock' : 'Crypto'}</span>
+            <span className="text-gray-500 text-xs font-mono flex items-center gap-1.5">
+              <span>•</span>
+              {trade.market === 'indian' ? (
+                <span className="flex items-center gap-1">🇮🇳 Stock</span>
+              ) : (
+                <span className="flex items-center gap-1">🌐 Crypto</span>
+              )}
+            </span>
           </div>
         </div>
 
