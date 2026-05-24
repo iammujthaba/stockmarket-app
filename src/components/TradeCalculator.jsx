@@ -227,6 +227,7 @@ export default function TradeCalculator({ market, profile, onLogTrade, tradeType
       effectiveRR: calculations.effectiveRR,
       netLoss: calculations.netLoss,
       netProfit: calculations.netProfit,
+      leverage: calculations.activeLeverage,
       timestamp: new Date().toISOString(),
     });
     // Clear form

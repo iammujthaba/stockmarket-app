@@ -16,7 +16,6 @@ export default function TradeDetailsModal({ trade, onClose }) {
         year: 'numeric',
         hour: '2-digit',
         minute: '2-digit',
-        second: '2-digit',
         hour12: true
       });
     } catch (e) {
@@ -76,9 +75,12 @@ export default function TradeDetailsModal({ trade, onClose }) {
     trade.activeLeverage || 1
   );
 
+  const marginAmt = trade.marginUtilized || (trade.positionValue / (trade.leverage || 1)) || 0;
+  const leverageMultiplier = trade.leverage || (marginAmt > 0 ? Math.round(trade.positionValue / marginAmt) : 1) || 1;
+
   return (
-    <div className="fixed inset-0 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fade-in">
-      <div className="relative w-full max-w-md bg-[#0c0e14]/95 border border-gray-800 rounded-2xl shadow-2xl overflow-hidden p-6 backdrop-blur-md">
+    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fade-in">
+      <div className="relative w-full max-w-sm bg-[#0c0e14]/98 border border-gray-800 rounded-2xl shadow-2xl overflow-hidden p-5 sm:p-6 backdrop-blur-md">
         {/* Top Accent Line */}
         <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-cyan-500 via-purple-500 to-emerald-500" />
 
@@ -94,11 +96,11 @@ export default function TradeDetailsModal({ trade, onClose }) {
 
         {/* Title / Symbol */}
         <div className="mb-5">
-          <h3 className="text-lg font-bold text-white tracking-tight">Active Trade Details</h3>
+          <h3 className="text-base font-bold text-white tracking-tight">Active Trade Details</h3>
           <div className="flex items-center gap-2 mt-1">
-            <span className="font-semibold text-gray-300 font-mono text-sm">{trade.symbol}</span>
-            <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${
-              trade.direction === 'long' ? 'bg-emerald-500/15 text-emerald-400' : 'bg-red-500/15 text-red-400'
+            <span className="font-bold text-gray-200 font-mono text-sm tracking-tight">{trade.symbol}</span>
+            <span className={`px-2 py-0.5 rounded text-[9px] font-extrabold uppercase tracking-wider ${
+              trade.direction === 'long' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/10' : 'bg-red-500/10 text-red-400 border border-red-500/10'
             }`}>
               {trade.direction}
             </span>
@@ -106,58 +108,61 @@ export default function TradeDetailsModal({ trade, onClose }) {
           </div>
         </div>
 
-        {/* Details List */}
-        <div className="space-y-3.5">
-          {/* Open Date */}
-          <div className="p-3 bg-gray-800/10 border border-gray-800 p-2.5 rounded-xl flex justify-between items-center text-xs">
-            <span className="text-gray-500 font-medium uppercase tracking-wider">Trade Open Date</span>
-            <span className="text-gray-300 font-mono font-medium">{formatOpenDate(trade.timestamp)}</span>
+        {/* Details Grid */}
+        <div className="space-y-3 font-sans">
+          {/* Open Date (Full width) */}
+          <div className="p-3 bg-gray-900/40 border border-gray-800/60 rounded-xl flex justify-between items-center text-xs">
+            <span className="text-gray-500 font-medium tracking-wide">Opened On</span>
+            <span className="text-gray-300 font-mono">{formatOpenDate(trade.timestamp)}</span>
           </div>
 
-          {/* Position Size */}
-          <div className="p-3 bg-gray-800/10 border border-gray-800 p-2.5 rounded-xl flex justify-between items-center text-xs">
-            <span className="text-gray-500 font-medium uppercase tracking-wider">Position Size</span>
-            <span className="text-gray-100 font-mono font-bold text-sm">
-              {currency}{trade.positionValue ? trade.positionValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : 'N/A'}
+          {/* Position Size (Full width) */}
+          <div className="p-3 bg-gray-900/40 border border-gray-800/60 rounded-xl flex justify-between items-center text-xs">
+            <span className="text-gray-500 font-medium tracking-wide">Position Size</span>
+            <span className="text-gray-100 font-mono font-bold text-sm flex items-center gap-1.5">
+              {currency}{marginAmt > 0 ? marginAmt.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : 'N/A'}
+              <span className="text-[10px] text-gray-400 font-semibold px-1 py-0.5 rounded bg-gray-800/60 border border-gray-700/40 font-sans">
+                {leverageMultiplier}x
+              </span>
             </span>
           </div>
 
-          {/* Est. Fees Row */}
+          {/* Est. Fees Grid (Side-by-side) */}
           <div className="grid grid-cols-2 gap-3 text-xs">
-            <div className="p-3 bg-gray-800/10 border border-gray-800 rounded-xl text-center">
-              <span className="text-[10px] text-gray-500 uppercase tracking-wider block mb-1">Est. Fees (on Stop Loss)</span>
-              <span className="text-gray-300 font-mono font-semibold">
+            <div className="p-2.5 bg-gray-900/20 border border-gray-800/40 rounded-xl flex flex-col justify-center items-center text-center">
+              <span className="text-[9px] text-gray-500 uppercase tracking-wider mb-0.5 font-medium">SL Fee (Est)</span>
+              <span className="text-gray-300 font-mono font-bold">
                 {currency}{stopLossFees.toFixed(2)}
               </span>
             </div>
-            <div className="p-3 bg-gray-800/10 border border-gray-800 rounded-xl text-center">
-              <span className="text-[10px] text-gray-500 uppercase tracking-wider block mb-1">Est. Fees (on Profit)</span>
-              <span className="text-gray-300 font-mono font-semibold">
+            <div className="p-2.5 bg-gray-900/20 border border-gray-800/40 rounded-xl flex flex-col justify-center items-center text-center">
+              <span className="text-[9px] text-gray-500 uppercase tracking-wider mb-0.5 font-medium">Target Fee (Est)</span>
+              <span className="text-gray-300 font-mono font-bold">
                 {currency}{targetFees.toFixed(2)}
               </span>
             </div>
           </div>
 
-          {/* Risk vs Reward Row */}
+          {/* Risk vs Reward Row (Side-by-side) */}
           <div className="grid grid-cols-2 gap-3">
-            <div className="p-3 bg-red-500/5 border border-red-500/10 rounded-xl text-center">
-              <span className="text-[10px] text-red-400/60 uppercase tracking-wider block mb-1">Net Risk Amount</span>
-              <span className="text-red-400 font-mono font-bold text-base">
+            <div className="p-3 bg-red-500/5 border border-red-500/10 rounded-xl text-center flex flex-col items-center justify-center">
+              <span className="text-[9px] text-red-400/60 uppercase tracking-wider mb-0.5 font-medium">Net Risk</span>
+              <span className="text-red-400 font-mono font-bold text-sm sm:text-base">
                 -{currency}{trade.netLoss ? trade.netLoss.toFixed(2) : (trade.totalRisk ? trade.totalRisk.toFixed(2) : '0.00')}
               </span>
             </div>
-            <div className="p-3 bg-emerald-500/5 border border-emerald-500/10 rounded-xl text-center">
-              <span className="text-[10px] text-emerald-400/60 uppercase tracking-wider block mb-1">Net Reward Amount</span>
-              <span className="text-emerald-400 font-mono font-bold text-base">
+            <div className="p-3 bg-emerald-500/5 border border-emerald-500/10 rounded-xl text-center flex flex-col items-center justify-center">
+              <span className="text-[9px] text-emerald-400/60 uppercase tracking-wider mb-0.5 font-medium">Net Reward</span>
+              <span className="text-emerald-400 font-mono font-bold text-sm sm:text-base">
                 +{currency}{trade.netProfit ? trade.netProfit.toFixed(2) : '0.00'}
               </span>
             </div>
           </div>
 
-          {/* Breakeven Price Card */}
-          <div className="p-4 bg-amber-500/5 border border-amber-500/10 rounded-xl text-center">
-            <p className="text-[10px] text-amber-400/60 uppercase tracking-wider mb-1">Breakeven Price (Including Fees)</p>
-            <p className="text-2xl font-bold font-mono text-amber-300">
+          {/* Breakeven Price Card (Full width, High visibility) */}
+          <div className="p-3.5 bg-amber-500/5 border border-amber-500/15 rounded-xl text-center shadow-inner">
+            <p className="text-[9px] text-amber-400/70 uppercase tracking-wider mb-0.5 font-medium">Breakeven Exit Price (With Fees)</p>
+            <p className="text-xl font-bold font-mono text-amber-400 tracking-wide">
               {currency}{parseFloat(breakevenPrice).toLocaleString(undefined, { minimumFractionDigits: trade.market === 'crypto' ? 4 : 2, maximumFractionDigits: trade.market === 'crypto' ? 4 : 2 })}
             </p>
           </div>
@@ -166,7 +171,7 @@ export default function TradeDetailsModal({ trade, onClose }) {
         {/* Action Button */}
         <button
           onClick={onClose}
-          className="w-full mt-6 py-3 bg-gray-800 hover:bg-gray-700 border border-gray-700 rounded-xl text-xs font-semibold text-gray-300 hover:text-white transition-all active:scale-[0.99]"
+          className="w-full mt-5 py-3 bg-gray-800/80 hover:bg-gray-700 border border-gray-700/60 rounded-xl text-xs font-semibold text-gray-300 hover:text-white transition-all active:scale-[0.99] shadow-md"
         >
           Dismiss Details
         </button>
