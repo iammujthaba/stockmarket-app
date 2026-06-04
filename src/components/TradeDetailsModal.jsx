@@ -74,6 +74,7 @@ export default function TradeDetailsModal({ trade, onClose }) {
 
   const marginAmt = trade.marginUtilized || (trade.positionValue / (trade.leverage || 1)) || 0;
   const leverageMultiplier = trade.leverage || (marginAmt > 0 ? Math.round(trade.positionValue / marginAmt) : 1) || 1;
+  const isIndianDelivery = trade.market === 'indian' && trade.tradeType === 'delivery';
 
   return (
     <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fade-in">
@@ -119,16 +120,35 @@ export default function TradeDetailsModal({ trade, onClose }) {
             <span className="text-gray-300 font-mono">{formatOpenDate(trade.timestamp)}</span>
           </div>
 
-          {/* Position Size (Full width) */}
-          <div className="p-3 bg-gray-900/40 border border-gray-800/60 rounded-xl flex justify-between items-center text-xs">
-            <span className="text-gray-500 font-medium tracking-wide">Position Size</span>
-            <span className="text-gray-100 font-mono font-bold text-sm flex items-center gap-1.5">
-              {currency}{marginAmt > 0 ? marginAmt.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : 'N/A'}
-              <span className="text-[10px] text-gray-400 font-semibold px-1 py-0.5 rounded bg-gray-800/60 border border-gray-700/40 font-sans">
-                {leverageMultiplier}x
+          {/* Position Size */}
+          {isIndianDelivery ? (
+            <div className="p-3 bg-gray-900/40 border border-gray-800/60 rounded-xl flex justify-between items-center text-xs">
+              <span className="text-gray-500 font-medium tracking-wide">Position Size</span>
+              <span className="text-gray-100 font-mono font-bold text-sm">
+                {currency}{marginAmt > 0 ? marginAmt.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : 'N/A'}
               </span>
-            </span>
-          </div>
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 gap-3 text-xs">
+              <div className="p-3 bg-gray-900/40 border border-gray-800/60 rounded-xl text-center flex flex-col justify-center items-center">
+                <span className="text-[9px] text-gray-500 uppercase tracking-wider mb-1.5 font-medium flex items-center gap-1.5">
+                  <span>Total Size</span>
+                  <span className="text-[9px] text-gray-400 font-semibold px-1 py-0.5 rounded bg-gray-800 border border-gray-700 font-sans">
+                    {leverageMultiplier}x
+                  </span>
+                </span>
+                <span className="text-gray-100 font-mono font-bold text-sm">
+                  {currency}{(marginAmt * leverageMultiplier).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                </span>
+              </div>
+              <div className="p-3 bg-gray-900/40 border border-gray-800/60 rounded-xl text-center flex flex-col justify-center items-center">
+                <span className="text-[9px] text-gray-500 uppercase tracking-wider mb-1.5 font-medium">Margin Utilized</span>
+                <span className="text-gray-100 font-mono font-bold text-sm">
+                  {currency}{marginAmt.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                </span>
+              </div>
+            </div>
+          )}
 
           {/* Est. Fees Grid (Side-by-side) */}
           <div className="grid grid-cols-2 gap-3 text-xs">
