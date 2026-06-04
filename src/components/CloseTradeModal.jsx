@@ -8,6 +8,7 @@ export default function CloseTradeModal({ trade, onClose }) {
   const [outcome, setOutcome] = useState('');
   const [exitPrice, setExitPrice] = useState('');
   const [loading, setLoading] = useState(false);
+  const [tradeReport, setTradeReport] = useState('');
 
   const currency = trade.market === 'indian' ? '₹' : '$';
 
@@ -78,9 +79,14 @@ export default function CloseTradeModal({ trade, onClose }) {
 
   const trueNetPnL = grossRealizedPnL - actualFees;
 
-  const handleSubmit = (e) => {
+  const handleGoToReport = (e) => {
     e.preventDefault();
+    setStep(3);
+  };
+
+  const handleExecuteJournal = (reportText) => {
     setLoading(true);
+    const finalReport = reportText.trim() || 'N/A';
 
     fetch(GOOGLE_APP_URL, {
       method: "POST",
@@ -102,7 +108,9 @@ export default function CloseTradeModal({ trade, onClose }) {
         effectiveReward: grossRealizedPnL,
         effectiveRR: trade.effectiveRR ? `1:${Number(trade.effectiveRR).toFixed(2)}` : 'N/A',
         actualFees: actualFees,
-        netPnL: trueNetPnL
+        netPnL: trueNetPnL,
+        entryReason: trade.entryReason || 'N/A',
+        tradeReport: finalReport
       })
     })
       .then(() => {
@@ -115,10 +123,23 @@ export default function CloseTradeModal({ trade, onClose }) {
   };
 
   return (
-    <div className="fixed inset-0 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fade-in">
+    <div className="fixed inset-0 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fade-in text-left">
       <div className="relative w-full max-w-md bg-[#0c0e14]/95 border border-gray-800 rounded-2xl shadow-2xl overflow-hidden p-6 backdrop-blur-md">
         {/* Top Accent Line */}
         <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-cyan-500 via-purple-500 to-red-500" />
+
+        {/* Back Button (shown for steps 2 & 3) */}
+        {step > 1 && (
+          <button
+            onClick={() => setStep(step - 1)}
+            className="absolute top-4 left-4 text-gray-500 hover:text-white transition-colors"
+            disabled={loading}
+          >
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+            </svg>
+          </button>
+        )}
 
         {/* Close Button */}
         <button
@@ -132,7 +153,7 @@ export default function CloseTradeModal({ trade, onClose }) {
         </button>
 
         {/* Title */}
-        <div className="mb-4">
+        <div className={`mb-4 ${step > 1 ? 'pl-6' : ''}`}>
           <h3 className="text-lg font-bold text-white tracking-tight">Close Trade Journal</h3>
           <p className="text-xs text-gray-500 mt-0.5">
             Record outcome for <span className="font-semibold text-gray-300 font-mono">{trade.symbol}</span> ({trade.direction.toUpperCase()})
@@ -204,21 +225,20 @@ export default function CloseTradeModal({ trade, onClose }) {
 
         {/* Step 2: Slippage Editor & Realization */}
         {step === 2 && (
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleGoToReport} className="space-y-4">
             {/* Outcome tag */}
             <div className="flex justify-between items-center bg-gray-800/10 border border-gray-800 p-2.5 rounded-xl text-xs">
               <span className="text-gray-500">Outcome Selected:</span>
-              <span className={`px-2.5 py-0.5 rounded font-bold uppercase tracking-wider text-[10px] ${
-                outcome === 'win' ? 'bg-emerald-500/15 text-emerald-400' :
-                outcome === 'loss' ? 'bg-red-500/15 text-red-400' :
-                'bg-blue-500/15 text-blue-400'
-              }`}>
+              <span className={`px-2.5 py-0.5 rounded font-bold uppercase tracking-wider text-[10px] ${outcome === 'win' ? 'bg-emerald-500/15 text-emerald-400' :
+                  outcome === 'loss' ? 'bg-red-500/15 text-red-400' :
+                    'bg-blue-500/15 text-blue-400'
+                }`}>
                 {outcome}
               </span>
             </div>
 
             {/* Exit price input */}
-            <div className="space-y-1.5">
+            <div className="space-y-1.5 text-left">
               <label className="text-xs font-medium text-gray-400 uppercase tracking-wider">
                 Actual Exit Price
               </label>
@@ -235,13 +255,12 @@ export default function CloseTradeModal({ trade, onClose }) {
             </div>
 
             {/* Realized PnL Card */}
-            <div className={`p-4 rounded-xl border text-center transition-all ${
-              trueNetPnL > 0
+            <div className={`p-4 rounded-xl border text-center transition-all ${trueNetPnL > 0
                 ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-300'
                 : trueNetPnL < 0
-                ? 'bg-red-500/10 border-red-500/20 text-red-300'
-                : 'bg-gray-800/20 border-gray-700/30 text-gray-300'
-            }`}>
+                  ? 'bg-red-500/10 border-red-500/20 text-red-300'
+                  : 'bg-gray-800/20 border-gray-700/30 text-gray-300'
+              }`}>
               <p className="text-[10px] text-gray-500 uppercase tracking-wider mb-1">
                 Realized P&L
               </p>
@@ -255,32 +274,68 @@ export default function CloseTradeModal({ trade, onClose }) {
             {/* Actions */}
             <div className="flex gap-3 pt-2">
               <button
-                type="button"
-                onClick={() => setStep(1)}
-                disabled={loading}
-                className="flex-1 py-3 bg-gray-800 hover:bg-gray-700 border border-gray-700 rounded-xl text-xs font-semibold text-gray-300 hover:text-white transition-all disabled:opacity-50"
-              >
-                Back
-              </button>
-              <button
                 type="submit"
                 disabled={loading}
-                className="flex-1 py-3 bg-gradient-to-r from-cyan-500 to-purple-500 hover:from-cyan-400 hover:to-purple-400 text-white rounded-xl text-xs font-semibold shadow-lg shadow-cyan-500/10 transition-all flex items-center justify-center gap-2 disabled:opacity-50 active:scale-[0.99]"
+                className="w-full py-3 bg-gradient-to-r from-cyan-500 to-purple-500 hover:from-cyan-400 hover:to-purple-400 text-white rounded-xl text-xs font-semibold shadow-lg shadow-cyan-500/10 transition-all flex items-center justify-center gap-2 disabled:opacity-50 active:scale-[0.99]"
+              >
+                Confirm & Journal
+              </button>
+            </div>
+          </form>
+        )}
+
+        {step === 3 && (
+          <div className="space-y-4">
+            {/* Realized PnL summary indicator */}
+            <div className="flex justify-between items-center bg-gray-800/10 border border-gray-800 p-2.5 rounded-xl text-xs">
+              <span className="text-gray-500">Realized PnL:</span>
+              <span className={`font-mono font-bold text-xs ${trueNetPnL > 0 ? 'text-emerald-400' : trueNetPnL < 0 ? 'text-red-400' : 'text-gray-300'}`}>
+                {trueNetPnL > 0 ? '+' : ''}{currency}{trueNetPnL.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              </span>
+            </div>
+
+            {/* Trade Result Report Input */}
+            <div className="space-y-1.5 text-left">
+              <label className="text-xs font-medium text-gray-400 uppercase tracking-wider">
+                Trade Result Report
+              </label>
+              <p className="text-[11px] text-red-400 font-semibold leading-normal mb-2 flex items-center gap-1">
+                <span>⚠️</span> Did you follow your Trade Rules?
+              </p>
+              <textarea
+                disabled={loading}
+                value={tradeReport}
+                onChange={(e) => setTradeReport(e.target.value)}
+                placeholder="e.g. Reached target order block, reacted at key Fair Value Gap (FVG), or trade invalidated by liquidity sweep..."
+                rows={3}
+                className="w-full px-4 py-3 bg-gray-800/50 border border-gray-700/50 rounded-xl text-white placeholder-gray-600 focus:outline-none focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/20 transition-all text-xs font-sans resize-none"
+              />
+            </div>
+
+            {/* Actions */}
+            <div className="pt-2">
+              <button
+                type="button"
+                disabled={loading}
+                onClick={() => {
+                  handleExecuteJournal(tradeReport);
+                }}
+                className="w-full py-3 bg-gradient-to-r from-cyan-500 to-purple-500 hover:from-cyan-400 hover:to-purple-400 text-white rounded-xl text-xs font-semibold shadow-lg shadow-cyan-500/10 transition-all flex items-center justify-center gap-2 disabled:opacity-50 active:scale-[0.99]"
               >
                 {loading ? (
                   <>
                     <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth={4} />
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                     </svg>
                     Journaling...
                   </>
                 ) : (
-                  'Confirm & Journal'
+                  'Submit & Journal'
                 )}
               </button>
             </div>
-          </form>
+          </div>
         )}
       </div>
     </div>

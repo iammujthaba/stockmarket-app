@@ -10,6 +10,8 @@ export default function TradeCalculator({ market, profile, onLogTrade, tradeType
   const [showFeeBreakdown, setShowFeeBreakdown] = useState(false);
   const [lotSizeOverride, setLotSizeOverride] = useState(profile.lotSize || 1);
   const [useLotSize, setUseLotSize] = useState(profile.useLotSize || false);
+  const [showReasonModal, setShowReasonModal] = useState(false);
+  const [entryReason, setEntryReason] = useState('');
 
   // Sync R:R and lot settings from profile when market changes
   useEffect(() => {
@@ -204,7 +206,12 @@ export default function TradeCalculator({ market, profile, onLogTrade, tradeType
     };
   }, [entryPrice, stopLoss, rrRatio, direction, market, profile, useLotSize, lotSizeOverride, tradeType, availableBalance, activeLeverage]);
 
-  const handleLogTrade = () => {
+  const handleLogClick = () => {
+    if (!calculations || !symbol.trim()) return;
+    setShowReasonModal(true);
+  };
+
+  const completeLogTrade = (reason) => {
     if (!calculations || !symbol.trim()) return;
     onLogTrade({
       id: Date.now().toString(36) + Math.random().toString(36).substring(2, 6),
@@ -229,11 +236,14 @@ export default function TradeCalculator({ market, profile, onLogTrade, tradeType
       netProfit: calculations.netProfit,
       leverage: calculations.activeLeverage,
       timestamp: new Date().toISOString(),
+      entryReason: reason.trim() || 'N/A',
     });
     // Clear form
     setSymbol('');
     setEntryPrice('');
     setStopLoss('');
+    setEntryReason('');
+    setShowReasonModal(false);
   };
 
   const currency = profile.currency || '₹';
@@ -519,7 +529,7 @@ export default function TradeCalculator({ market, profile, onLogTrade, tradeType
 
           {/* Log Trade Button */}
           <button
-            onClick={handleLogTrade}
+            onClick={handleLogClick}
             disabled={!symbol.trim()}
             className={`w-full py-3.5 rounded-xl font-semibold text-sm tracking-wide transition-all duration-300 ${symbol.trim()
                 ? 'bg-gradient-to-r from-cyan-500 to-purple-500 hover:from-cyan-400 hover:to-purple-400 text-white shadow-lg shadow-cyan-500/20 hover:shadow-cyan-500/30 active:scale-[0.98]'
@@ -536,6 +546,51 @@ export default function TradeCalculator({ market, profile, onLogTrade, tradeType
           {!symbol.trim() && calculations && (
             <p className="text-xs text-center text-gray-500 -mt-2">Enter a symbol to log this trade</p>
           )}
+        </div>
+      )}
+
+      {showReasonModal && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fade-in text-left">
+          <div className="relative w-full max-w-sm bg-[#0c0e14]/98 border border-gray-800 rounded-2xl shadow-2xl overflow-hidden p-5 sm:p-6 backdrop-blur-md">
+            {/* Top Accent Line */}
+            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-cyan-500 via-purple-500 to-emerald-500" />
+            
+            {/* Close Button */}
+            <button
+              type="button"
+              onClick={() => setShowReasonModal(false)}
+              className="absolute top-4 right-4 text-gray-500 hover:text-white transition-colors"
+            >
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+
+            <h3 className="text-base font-bold text-white tracking-tight mb-2">Why are you taking this trade?</h3>
+            <p className="text-xs text-red-400 font-semibold mb-4 flex items-center gap-1">
+              <span>⚠️</span> Never trade against the trend. Plan your trade and trade your plan.
+            </p>
+            
+            <textarea
+              value={entryReason}
+              onChange={(e) => setEntryReason(e.target.value)}
+              placeholder="e.g. 15m Order Block mitigation with change of character (CHoCH) on 1m, targeting weekly liquidity pool..."
+              rows={3}
+              className="w-full px-4 py-3 bg-gray-800/50 border border-gray-700/50 rounded-xl text-white placeholder-gray-600 focus:outline-none focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/20 transition-all text-xs font-sans resize-none"
+            />
+            
+            <div className="mt-4">
+              <button
+                type="button"
+                onClick={() => {
+                  completeLogTrade(entryReason);
+                }}
+                className="w-full py-3 bg-gradient-to-r from-cyan-500 to-purple-500 hover:from-cyan-400 hover:to-purple-400 text-white rounded-xl text-xs font-semibold shadow-lg shadow-cyan-500/10 transition-all active:scale-[0.99]"
+              >
+                Submit Reason
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

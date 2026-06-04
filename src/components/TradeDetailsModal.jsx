@@ -120,6 +120,14 @@ export default function TradeDetailsModal({ trade, onClose }) {
             <span className="text-gray-300 font-mono">{formatOpenDate(trade.timestamp)}</span>
           </div>
 
+          {/* Entry Reason (Full width) */}
+          {trade.entryReason && trade.entryReason !== 'N/A' && (
+            <div className="p-3 bg-gray-900/40 border border-gray-800/60 rounded-xl text-xs flex flex-col gap-1 text-left">
+              <span className="text-gray-500 font-medium tracking-wide">Entry Reason</span>
+              <span className="text-gray-300 font-sans leading-relaxed break-words">{trade.entryReason}</span>
+            </div>
+          )}
+
           {/* Position Size */}
           {isIndianDelivery ? (
             <div className="p-3 bg-gray-900/40 border border-gray-800/60 rounded-xl flex justify-between items-center text-xs">
