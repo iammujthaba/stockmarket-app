@@ -8,7 +8,7 @@ export default function CloseTradeModal({ trade, onClose }) {
   const [outcome, setOutcome] = useState('');
   const [exitPrice, setExitPrice] = useState('');
   const [loading, setLoading] = useState(false);
-  const [tradeReport, setTradeReport] = useState('');
+  const [tradeSummary, setTradeSummary] = useState('');
 
   const currency = trade.market === 'indian' ? '₹' : '$';
 
@@ -84,9 +84,9 @@ export default function CloseTradeModal({ trade, onClose }) {
     setStep(3);
   };
 
-  const handleExecuteJournal = (reportText) => {
+  const handleExecuteJournal = (summaryText) => {
     setLoading(true);
-    const finalReport = reportText.trim() || 'N/A';
+    const finalSummary = summaryText.trim() || 'N/A';
 
     fetch(GOOGLE_APP_URL, {
       method: "POST",
@@ -110,7 +110,7 @@ export default function CloseTradeModal({ trade, onClose }) {
         actualFees: actualFees,
         netPnL: trueNetPnL,
         entryReason: trade.entryReason || 'N/A',
-        tradeReport: finalReport
+        tradeSummary: finalSummary
       })
     })
       .then(() => {
@@ -294,18 +294,18 @@ export default function CloseTradeModal({ trade, onClose }) {
               </span>
             </div>
 
-            {/* Trade Result Report Input */}
+            {/* Trade Result Summary Input */}
             <div className="space-y-1.5 text-left">
               <label className="text-xs font-medium text-gray-400 uppercase tracking-wider">
-                Trade Result Report
+                Trade Result Summary
               </label>
               <p className="text-[11px] text-red-400 font-semibold leading-normal mb-2 flex items-center gap-1">
                 <span>⚠️</span> Did you follow your Trade Rules?
               </p>
               <textarea
                 disabled={loading}
-                value={tradeReport}
-                onChange={(e) => setTradeReport(e.target.value)}
+                value={tradeSummary}
+                onChange={(e) => setTradeSummary(e.target.value)}
                 placeholder="e.g. Reached target order block, reacted at key Fair Value Gap (FVG), or trade invalidated by liquidity sweep..."
                 rows={3}
                 className="w-full px-4 py-3 bg-gray-800/50 border border-gray-700/50 rounded-xl text-white placeholder-gray-600 focus:outline-none focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/20 transition-all text-xs font-sans resize-none"
@@ -318,7 +318,7 @@ export default function CloseTradeModal({ trade, onClose }) {
                 type="button"
                 disabled={loading}
                 onClick={() => {
-                  handleExecuteJournal(tradeReport);
+                  handleExecuteJournal(tradeSummary);
                 }}
                 className="w-full py-3 bg-gradient-to-r from-cyan-500 to-purple-500 hover:from-cyan-400 hover:to-purple-400 text-white rounded-xl text-xs font-semibold shadow-lg shadow-cyan-500/10 transition-all flex items-center justify-center gap-2 disabled:opacity-50 active:scale-[0.99]"
               >

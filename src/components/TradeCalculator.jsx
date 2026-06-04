@@ -261,8 +261,8 @@ export default function TradeCalculator({ market, profile, onLogTrade, tradeType
         <button
           onClick={() => setDirection('long')}
           className={`flex-1 py-3 rounded-xl font-semibold text-sm tracking-wide transition-all duration-300 ${direction === 'long'
-              ? 'bg-emerald-500/15 text-emerald-400 border-2 border-emerald-500/40 shadow-lg shadow-emerald-500/10'
-              : 'bg-gray-800/40 text-gray-500 border-2 border-transparent hover:border-gray-700 hover:text-gray-400'
+            ? 'bg-emerald-500/15 text-emerald-400 border-2 border-emerald-500/40 shadow-lg shadow-emerald-500/10'
+            : 'bg-gray-800/40 text-gray-500 border-2 border-transparent hover:border-gray-700 hover:text-gray-400'
             }`}
         >
           <span className="flex items-center justify-center gap-2">
@@ -275,8 +275,8 @@ export default function TradeCalculator({ market, profile, onLogTrade, tradeType
         <button
           onClick={() => setDirection('short')}
           className={`flex-1 py-3 rounded-xl font-semibold text-sm tracking-wide transition-all duration-300 ${direction === 'short'
-              ? 'bg-red-500/15 text-red-400 border-2 border-red-500/40 shadow-lg shadow-red-500/10'
-              : 'bg-gray-800/40 text-gray-500 border-2 border-transparent hover:border-gray-700 hover:text-gray-400'
+            ? 'bg-red-500/15 text-red-400 border-2 border-red-500/40 shadow-lg shadow-red-500/10'
+            : 'bg-gray-800/40 text-gray-500 border-2 border-transparent hover:border-gray-700 hover:text-gray-400'
             }`}
         >
           <span className="flex items-center justify-center gap-2">
@@ -295,8 +295,8 @@ export default function TradeCalculator({ market, profile, onLogTrade, tradeType
             type="button"
             onClick={() => setTradeType('intraday')}
             className={`flex-1 py-2 text-xs font-semibold rounded-lg tracking-wider transition-all duration-200 ${tradeType === 'intraday'
-                ? 'bg-cyan-500/15 text-cyan-400 border border-cyan-500/30 shadow-sm'
-                : 'text-gray-400 hover:text-gray-300 border border-transparent'
+              ? 'bg-cyan-500/15 text-cyan-400 border border-cyan-500/30 shadow-sm'
+              : 'text-gray-400 hover:text-gray-300 border border-transparent'
               }`}
           >
             INTRADAY
@@ -305,8 +305,8 @@ export default function TradeCalculator({ market, profile, onLogTrade, tradeType
             type="button"
             onClick={() => setTradeType('delivery')}
             className={`flex-1 py-2 text-xs font-semibold rounded-lg tracking-wider transition-all duration-200 ${tradeType === 'delivery'
-                ? 'bg-purple-500/15 text-purple-400 border border-purple-500/30 shadow-sm'
-                : 'text-gray-400 hover:text-gray-300 border border-transparent'
+              ? 'bg-purple-500/15 text-purple-400 border border-purple-500/30 shadow-sm'
+              : 'text-gray-400 hover:text-gray-300 border border-transparent'
               }`}
           >
             DELIVERY
@@ -395,8 +395,8 @@ export default function TradeCalculator({ market, profile, onLogTrade, tradeType
             </div>
 
             <div className={`bg-gradient-to-br ${direction === 'long'
-                ? 'from-emerald-500/10 to-emerald-500/5 border-emerald-500/20'
-                : 'from-red-500/10 to-red-500/5 border-red-500/20'
+              ? 'from-emerald-500/10 to-emerald-500/5 border-emerald-500/20'
+              : 'from-red-500/10 to-red-500/5 border-red-500/20'
               } border rounded-2xl p-4 text-center`}>
               <p className={`text-xs uppercase tracking-wider mb-1 ${direction === 'long' ? 'text-emerald-400/70' : 'text-red-400/70'
                 }`}>
@@ -532,8 +532,8 @@ export default function TradeCalculator({ market, profile, onLogTrade, tradeType
             onClick={handleLogClick}
             disabled={!symbol.trim()}
             className={`w-full py-3.5 rounded-xl font-semibold text-sm tracking-wide transition-all duration-300 ${symbol.trim()
-                ? 'bg-gradient-to-r from-cyan-500 to-purple-500 hover:from-cyan-400 hover:to-purple-400 text-white shadow-lg shadow-cyan-500/20 hover:shadow-cyan-500/30 active:scale-[0.98]'
-                : 'bg-gray-800 text-gray-600 cursor-not-allowed'
+              ? 'bg-gradient-to-r from-cyan-500 to-purple-500 hover:from-cyan-400 hover:to-purple-400 text-white shadow-lg shadow-cyan-500/20 hover:shadow-cyan-500/30 active:scale-[0.98]'
+              : 'bg-gray-800 text-gray-600 cursor-not-allowed'
               }`}
           >
             <span className="flex items-center justify-center gap-2">
@@ -554,7 +554,7 @@ export default function TradeCalculator({ market, profile, onLogTrade, tradeType
           <div className="relative w-full max-w-sm bg-[#0c0e14]/98 border border-gray-800 rounded-2xl shadow-2xl overflow-hidden p-5 sm:p-6 backdrop-blur-md">
             {/* Top Accent Line */}
             <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-cyan-500 via-purple-500 to-emerald-500" />
-            
+
             {/* Close Button */}
             <button
               type="button"
@@ -568,9 +568,9 @@ export default function TradeCalculator({ market, profile, onLogTrade, tradeType
 
             <h3 className="text-base font-bold text-white tracking-tight mb-2">Why are you taking this trade?</h3>
             <p className="text-xs text-red-400 font-semibold mb-4 flex items-center gap-1">
-              <span>⚠️</span> Never trade against the trend. Plan your trade and trade your plan.
+              <span>⚠️</span> Never trade against the trend. <br />Plan your trade and trade your plan.
             </p>
-            
+
             <textarea
               value={entryReason}
               onChange={(e) => setEntryReason(e.target.value)}
@@ -578,7 +578,7 @@ export default function TradeCalculator({ market, profile, onLogTrade, tradeType
               rows={3}
               className="w-full px-4 py-3 bg-gray-800/50 border border-gray-700/50 rounded-xl text-white placeholder-gray-600 focus:outline-none focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/20 transition-all text-xs font-sans resize-none"
             />
-            
+
             <div className="mt-4">
               <button
                 type="button"
