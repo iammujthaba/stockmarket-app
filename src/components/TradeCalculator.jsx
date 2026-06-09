@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import { calculateFees, calculateTradeFees } from '../utils/FeeCalculator';
 
-export default function TradeCalculator({ market, profile, onLogTrade, tradeType, setTradeType, availableBalance, activeLeverage }) {
+export default function TradeCalculator({ market, profile, onLogTrade, tradeType, setTradeType, availableBalance, activeLeverage, cryptoExchange }) {
   const [direction, setDirection] = useState('long');
   const [entryPrice, setEntryPrice] = useState('');
   const [stopLoss, setStopLoss] = useState('');
@@ -62,7 +62,7 @@ export default function TradeCalculator({ market, profile, onLogTrade, tradeType
     const lotSize = (market === 'indian' && useLotSize && lotSizeOverride > 0) ? lotSizeOverride : 1;
 
     while (loopCountQty < maxLoopsQty) {
-      const roundTripLossFees = calculateTradeFees(market, tradeType, entry, sl, finalQuantity, activeLeverage);
+      const roundTripLossFees = calculateTradeFees(market, tradeType, entry, sl, finalQuantity, activeLeverage, cryptoExchange);
       const netLoss = (finalQuantity * riskPerShare) + roundTripLossFees;
 
       if (netLoss <= riskAmount) {
@@ -115,7 +115,7 @@ export default function TradeCalculator({ market, profile, onLogTrade, tradeType
       const maxLoopsTarget = 5000;
 
       while (loopCountTarget < maxLoopsTarget) {
-        roundTripWinFees = calculateTradeFees(market, tradeType, entry, rawTarget, finalQuantity, activeLeverage);
+        roundTripWinFees = calculateTradeFees(market, tradeType, entry, rawTarget, finalQuantity, activeLeverage, cryptoExchange);
         const grossProfit = finalQuantity * Math.abs(rawTarget - entry);
         netProfit = grossProfit - roundTripWinFees;
 
@@ -163,6 +163,7 @@ export default function TradeCalculator({ market, profile, onLogTrade, tradeType
       quantity: finalQuantity,
       leverage: activeLeverage,
       tradeType,
+      cryptoExchange,
     });
 
     const entryToSL = calculateFees(market, {
@@ -171,9 +172,10 @@ export default function TradeCalculator({ market, profile, onLogTrade, tradeType
       quantity: finalQuantity,
       leverage: activeLeverage,
       tradeType,
+      cryptoExchange,
     });
 
-    const finalLossFees = calculateTradeFees(market, tradeType, entry, sl, finalQuantity, activeLeverage);
+    const finalLossFees = calculateTradeFees(market, tradeType, entry, sl, finalQuantity, activeLeverage, cryptoExchange);
     const netLoss = actualRisk + finalLossFees;
     const effectiveRR = netLoss > 0 ? (netProfit / netLoss) : 0;
 
@@ -204,7 +206,7 @@ export default function TradeCalculator({ market, profile, onLogTrade, tradeType
       roundTripLossFees: finalLossFees,
       roundTripWinFees: entryToTarget.totalFees,
     };
-  }, [entryPrice, stopLoss, rrRatio, direction, market, profile, useLotSize, lotSizeOverride, tradeType, availableBalance, activeLeverage]);
+  }, [entryPrice, stopLoss, rrRatio, direction, market, profile, useLotSize, lotSizeOverride, tradeType, availableBalance, activeLeverage, cryptoExchange]);
 
   const handleLogClick = () => {
     if (!calculations || !symbol.trim()) return;

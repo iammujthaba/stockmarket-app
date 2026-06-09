@@ -32,6 +32,7 @@ export default function App() {
   const [profiles, setProfiles] = useLocalStorage('riskCalc_profiles', DEFAULT_PROFILES);
   const [activeTrades, setActiveTrades] = useLocalStorage('riskCalc_activeTrades', []);
   const [market, setMarket] = useLocalStorage('riskCalc_market', 'indian');
+  const [cryptoExchange, setCryptoExchange] = useLocalStorage('riskCalc_cryptoExchange', 'binance');
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [tradeType, setTradeType] = useState('intraday');
 
@@ -215,6 +216,7 @@ export default function App() {
               setTradeType={setTradeType}
               availableBalance={availableBalance}
               activeLeverage={activeLeverage}
+              cryptoExchange={cryptoExchange}
             />
           </div>
         </section>
@@ -235,6 +237,7 @@ export default function App() {
               trades={activeTrades}
               onCloseTrade={handleCloseTrade}
               profiles={profiles}
+              cryptoExchange={cryptoExchange}
             />
           </div>
         </section>
@@ -253,6 +256,8 @@ export default function App() {
         onClose={() => setSettingsOpen(false)}
         profiles={profiles}
         setProfiles={setProfiles}
+        cryptoExchange={cryptoExchange}
+        setCryptoExchange={setCryptoExchange}
       />
     </div>
   );

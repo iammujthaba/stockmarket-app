@@ -24,7 +24,7 @@ const DEFAULT_PROFILES = {
   },
 };
 
-export default function SettingsModal({ isOpen, onClose, profiles, setProfiles }) {
+export default function SettingsModal({ isOpen, onClose, profiles, setProfiles, cryptoExchange, setCryptoExchange }) {
   const [activeTab, setActiveTab] = useState('indian');
   const [draft, setDraft] = useState({});
 
@@ -98,11 +98,10 @@ export default function SettingsModal({ isOpen, onClose, profiles, setProfiles }
             <button
               key={key}
               onClick={() => setActiveTab(key)}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-                activeTab === key
-                  ? 'bg-gradient-to-r from-cyan-500/20 to-purple-500/20 text-cyan-400 border border-cyan-500/30'
-                  : 'text-gray-400 hover:text-gray-300 hover:bg-gray-800/50 border border-transparent'
-              }`}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${activeTab === key
+                ? 'bg-gradient-to-r from-cyan-500/20 to-purple-500/20 text-cyan-400 border border-cyan-500/30'
+                : 'text-gray-400 hover:text-gray-300 hover:bg-gray-800/50 border border-transparent'
+                }`}
             >
               {profile.label}
             </button>
@@ -132,21 +131,19 @@ export default function SettingsModal({ isOpen, onClose, profiles, setProfiles }
             <div className="flex gap-2">
               <button
                 onClick={() => updateField('riskMode', 'fixed')}
-                className={`flex-1 py-2 rounded-lg text-sm font-medium transition-all ${
-                  current.riskMode === 'fixed'
-                    ? 'bg-cyan-500/15 text-cyan-400 border border-cyan-500/30'
-                    : 'bg-gray-800/50 text-gray-400 border border-gray-700/50 hover:text-gray-300'
-                }`}
+                className={`flex-1 py-2 rounded-lg text-sm font-medium transition-all ${current.riskMode === 'fixed'
+                  ? 'bg-cyan-500/15 text-cyan-400 border border-cyan-500/30'
+                  : 'bg-gray-800/50 text-gray-400 border border-gray-700/50 hover:text-gray-300'
+                  }`}
               >
                 Fixed Amount
               </button>
               <button
                 onClick={() => updateField('riskMode', 'percent')}
-                className={`flex-1 py-2 rounded-lg text-sm font-medium transition-all ${
-                  current.riskMode === 'percent'
-                    ? 'bg-cyan-500/15 text-cyan-400 border border-cyan-500/30'
-                    : 'bg-gray-800/50 text-gray-400 border border-gray-700/50 hover:text-gray-300'
-                }`}
+                className={`flex-1 py-2 rounded-lg text-sm font-medium transition-all ${current.riskMode === 'percent'
+                  ? 'bg-cyan-500/15 text-cyan-400 border border-cyan-500/30'
+                  : 'bg-gray-800/50 text-gray-400 border border-gray-700/50 hover:text-gray-300'
+                  }`}
               >
                 % of Balance
               </button>
@@ -205,14 +202,12 @@ export default function SettingsModal({ isOpen, onClose, profiles, setProfiles }
                 </label>
                 <button
                   onClick={() => updateField('useLotSize', !current.useLotSize)}
-                  className={`relative w-11 h-6 rounded-full transition-colors duration-200 ${
-                    current.useLotSize ? 'bg-cyan-500' : 'bg-gray-600'
-                  }`}
+                  className={`relative w-11 h-6 rounded-full transition-colors duration-200 ${current.useLotSize ? 'bg-cyan-500' : 'bg-gray-600'
+                    }`}
                 >
                   <span
-                    className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform duration-200 ${
-                      current.useLotSize ? 'translate-x-5' : 'translate-x-0'
-                    }`}
+                    className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform duration-200 ${current.useLotSize ? 'translate-x-5' : 'translate-x-0'
+                      }`}
                   />
                 </button>
               </div>
@@ -234,19 +229,75 @@ export default function SettingsModal({ isOpen, onClose, profiles, setProfiles }
           )}
 
           {activeTab === 'crypto' && (
-            <div className="space-y-1.5">
-              <label className="text-xs font-medium text-gray-400 uppercase tracking-wider">
-                Default Leverage
-              </label>
-              <input
-                type="number"
-                min="1"
-                max="125"
-                value={current.leverage || 1}
-                onChange={(e) => updateField('leverage', Math.max(1, +e.target.value))}
-                className="w-full px-4 py-2.5 bg-gray-800/50 border border-gray-700/50 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/20 transition-all"
-              />
-            </div>
+            <>
+              {/* Exchange Selector */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                    Crypto Exchange
+                  </label>
+                  <span className={`text-[10px] font-semibold tracking-wide ${cryptoExchange === 'binance' ? 'text-amber-400' : 'text-cyan-400'
+                    }`}>
+                    {cryptoExchange === 'binance' ? '(Best Long-term)' : '(Best Short-term)'}
+                  </span>
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setCryptoExchange('binance')}
+                    className={`flex-1 py-3 px-2 rounded-xl text-sm font-semibold transition-all flex flex-col items-center gap-1.5 border ${cryptoExchange === 'binance'
+                      ? 'bg-amber-500/15 text-amber-400 border-amber-500/30'
+                      : 'bg-gray-800/40 text-gray-400 border-gray-700/50 hover:text-gray-300'
+                      }`}
+                  >
+                    <span className="text-white font-bold">Binance</span>
+                    <div className="flex flex-col items-center text-[10px] font-mono font-semibold leading-tight">
+                      <span className={cryptoExchange === 'binance' ? 'text-amber-400/80' : 'text-gray-500'}>
+                        Limit Order Fee: 0.018%
+                      </span>
+                      <span className={cryptoExchange === 'binance' ? 'text-amber-400/80' : 'text-gray-500'}>
+                        Market Order Fee: 0.05%
+                      </span>
+                    </div>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setCryptoExchange('kcex')}
+                    className={`flex-1 py-3 px-2 rounded-xl text-sm font-semibold transition-all flex flex-col items-center gap-1.5 border ${cryptoExchange === 'kcex'
+                      ? 'bg-cyan-500/15 text-cyan-400 border-cyan-500/30'
+                      : 'bg-gray-800/40 text-gray-400 border-gray-700/50 hover:text-gray-300'
+                      }`}
+                  >
+                    <span className="text-white font-bold">KCEX</span>
+                    <div className="flex flex-col items-center text-[10px] font-mono font-semibold leading-tight">
+                      <span className={cryptoExchange === 'kcex' ? 'text-cyan-400/80' : 'text-gray-500'}>
+                        Limit Order Fee: 0.00%
+                      </span>
+                      <span className={cryptoExchange === 'kcex' ? 'text-emerald-400/80' : 'text-gray-500'}>
+                        Market Order Fee: 0.02%
+                      </span>
+                    </div>
+                  </button>
+                </div>
+              </div>
+
+
+
+              {/* Default Leverage */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium text-gray-400 uppercase tracking-wider">
+                  Default Leverage
+                </label>
+                <input
+                  type="number"
+                  min="1"
+                  max="125"
+                  value={current.leverage || 1}
+                  onChange={(e) => updateField('leverage', Math.max(1, +e.target.value))}
+                  className="w-full px-4 py-2.5 bg-gray-800/50 border border-gray-700/50 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/20 transition-all"
+                />
+              </div>
+            </>
           )}
         </div>
 

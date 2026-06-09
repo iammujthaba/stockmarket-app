@@ -2,7 +2,7 @@ import { useState } from 'react';
 import CloseTradeModal from './CloseTradeModal';
 import TradeDetailsModal from './TradeDetailsModal';
 
-export default function CapitalLedger({ trades, onCloseTrade, profiles }) {
+export default function CapitalLedger({ trades, onCloseTrade, profiles, cryptoExchange }) {
   const [selectedTradeToClose, setSelectedTradeToClose] = useState(null);
   const [selectedTradeDetails, setSelectedTradeDetails] = useState(null);
   const [marketFilter, setMarketFilter] = useState('all'); // 'all', 'indian', 'crypto'
@@ -190,6 +190,7 @@ export default function CapitalLedger({ trades, onCloseTrade, profiles }) {
       {selectedTradeToClose && (
         <CloseTradeModal
           trade={selectedTradeToClose}
+          cryptoExchange={cryptoExchange}
           onClose={(id) => {
             if (id) {
               onCloseTrade(id);
@@ -202,6 +203,7 @@ export default function CapitalLedger({ trades, onCloseTrade, profiles }) {
       {selectedTradeDetails && (
         <TradeDetailsModal
           trade={selectedTradeDetails}
+          cryptoExchange={cryptoExchange}
           onClose={() => setSelectedTradeDetails(null)}
         />
       )}

@@ -3,7 +3,7 @@ import { calculateTradeFees } from '../utils/FeeCalculator';
 
 const GOOGLE_APP_URL = "https://script.google.com/macros/s/AKfycbxhDA4ykFkzejH70uABk-zSr8uXuUuoh7cN5T_vseNdWwMvrZMfAAL_7hLxSJFVnB-1/exec";
 
-export default function CloseTradeModal({ trade, onClose }) {
+export default function CloseTradeModal({ trade, onClose, cryptoExchange }) {
   const [step, setStep] = useState(1);
   const [outcome, setOutcome] = useState('');
   const [exitPrice, setExitPrice] = useState('');
@@ -34,7 +34,8 @@ export default function CloseTradeModal({ trade, onClose }) {
           trade.entry,
           exit,
           trade.quantity,
-          trade.activeLeverage || 1
+          trade.activeLeverage || 1,
+          cryptoExchange
         );
 
         // Calculate gross PnL
@@ -70,7 +71,8 @@ export default function CloseTradeModal({ trade, onClose }) {
     trade.entry,
     Number(actualExitPrice),
     trade.quantity,
-    1 // activeLeverage fallback
+    1, // activeLeverage fallback
+    cryptoExchange
   );
 
   const grossRealizedPnL = trade.direction === 'long'

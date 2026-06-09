@@ -92,62 +92,67 @@ export function calculateDhanFees(entryPrice, exitPrice, quantity, tradeType = '
 
 
 // ─────────────────────────────────────────────
-//  Binance — USDS-M Futures (Taker)
+//  Crypto — USDS-M Futures (Exchange-Specific)
 // ─────────────────────────────────────────────
 
 /**
- * Calculates round-trip fees for a Binance USDS-M Futures trade.
- * Assumes Taker fee for conservative risk math.
+ * Calculates round-trip fees for a Crypto USDS-M Futures trade.
+ * Fee rate depends on the selected exchange:
+ *  - Binance: VIP 0 Maker (Limit) w/ BNB discount = 0.018% (0.00018)
+ *  - KCEX:    Regular User Taker (Market)           = 0.02%  (0.0002)
  *
- * @param {number} entryPrice   - Per-unit entry price in USDT
- * @param {number} exitPrice    - Per-unit exit price in USDT
- * @param {number} quantity     - Number of units (can be fractional)
- * @param {number} leverage     - Leverage multiplier (default 1)
+ * @param {number} entryPrice      - Per-unit entry price in USDT
+ * @param {number} exitPrice       - Per-unit exit price in USDT
+ * @param {number} quantity        - Number of units (can be fractional)
+ * @param {number} leverage        - Leverage multiplier (default 1)
+ * @param {string} cryptoExchange  - 'binance' | 'kcex' (default 'binance')
  * @returns {{ breakdown: object, totalFees: number }}
  */
-export function calculateBinanceFees(entryPrice, exitPrice, quantity, leverage = 1) {
+export function calculateBinanceFees(entryPrice, exitPrice, quantity, leverage = 1, cryptoExchange = 'binance') {
   if (!entryPrice || !exitPrice || !quantity) {
     return { breakdown: {}, totalFees: 0 };
   }
 
-  const TAKER_RATE = 0.0005; // 0.0500%
+  // Exchange-specific fee rate
+  const FEE_RATE = cryptoExchange === 'kcex' ? 0.0002 : 0.00018; // KCEX Taker 0.02% | Binance Maker 0.018%
 
   // Nominal position size = Price * Quantity (leverage already reflected in quantity/margin)
   const entryNotional = entryPrice * quantity;
   const exitNotional  = exitPrice  * quantity;
 
-  const entryFee = entryNotional * TAKER_RATE;
-  const exitFee  = exitNotional  * TAKER_RATE;
+  const entryFee = entryNotional * FEE_RATE;
+  const exitFee  = exitNotional  * FEE_RATE;
   const totalFees = entryFee + exitFee;
 
   return {
     breakdown: {
       entryFee: +entryFee.toFixed(4),
       exitFee:  +exitFee.toFixed(4),
-      takerRate: `${(TAKER_RATE * 100).toFixed(4)}%`,
+      feeRate: `${(FEE_RATE * 100).toFixed(4)}%`,
+      exchange: cryptoExchange === 'kcex' ? 'KCEX' : 'Binance',
     },
     totalFees: +totalFees.toFixed(4),
   };
 }
 
 
-export function calculateFees(market, { entryPrice, exitPrice, quantity, leverage, tradeType }) {
+export function calculateFees(market, { entryPrice, exitPrice, quantity, leverage, tradeType, cryptoExchange }) {
   switch (market) {
     case 'indian':
       return calculateDhanFees(entryPrice, exitPrice, quantity, tradeType);
     case 'crypto':
-      return calculateBinanceFees(entryPrice, exitPrice, quantity, leverage);
+      return calculateBinanceFees(entryPrice, exitPrice, quantity, leverage, cryptoExchange);
     default:
       console.warn(`[FeeCalculator] Unknown market: ${market}`);
       return { breakdown: {}, totalFees: 0 };
   }
 }
 
-export function calculateTradeFees(market, tradeType, entry, exit, quantity, activeLeverage) {
+export function calculateTradeFees(market, tradeType, entry, exit, quantity, activeLeverage, cryptoExchange = 'binance') {
   if (market === 'indian') {
     return calculateDhanFees(entry, exit, quantity, tradeType).totalFees;
   } else if (market === 'crypto') {
-    return calculateBinanceFees(entry, exit, quantity, activeLeverage).totalFees;
+    return calculateBinanceFees(entry, exit, quantity, activeLeverage, cryptoExchange).totalFees;
   }
   return 0;
 }

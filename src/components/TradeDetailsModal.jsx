@@ -1,6 +1,6 @@
 import { calculateTradeFees } from '../utils/FeeCalculator';
 
-export default function TradeDetailsModal({ trade, onClose }) {
+export default function TradeDetailsModal({ trade, onClose, cryptoExchange }) {
   if (!trade) return null;
 
   const currency = trade.market === 'indian' ? '₹' : '$';
@@ -34,7 +34,8 @@ export default function TradeDetailsModal({ trade, onClose }) {
         trade.entry,
         exit,
         trade.quantity,
-        trade.activeLeverage || 1
+        trade.activeLeverage || 1,
+        cryptoExchange
       );
 
       const grossPnL = trade.direction === 'long'
@@ -60,7 +61,8 @@ export default function TradeDetailsModal({ trade, onClose }) {
     trade.entry,
     trade.stopLoss,
     trade.quantity,
-    trade.activeLeverage || 1
+    trade.activeLeverage || 1,
+    cryptoExchange
   );
 
   const targetFees = calculateTradeFees(
@@ -69,7 +71,8 @@ export default function TradeDetailsModal({ trade, onClose }) {
     trade.entry,
     trade.target,
     trade.quantity,
-    trade.activeLeverage || 1
+    trade.activeLeverage || 1,
+    cryptoExchange
   );
 
   const marginAmt = trade.marginUtilized || (trade.positionValue / (trade.leverage || 1)) || 0;
