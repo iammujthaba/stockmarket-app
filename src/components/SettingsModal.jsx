@@ -253,10 +253,10 @@ export default function SettingsModal({ isOpen, onClose, profiles, setProfiles, 
                     <span className="text-white font-bold">Binance</span>
                     <div className="flex flex-col items-center text-[10px] font-mono font-semibold leading-tight">
                       <span className={cryptoExchange === 'binance' ? 'text-amber-400/80' : 'text-gray-500'}>
-                        Limit Order Fee: 0.018%
+                        Limit Fee: 0.018%
                       </span>
                       <span className={cryptoExchange === 'binance' ? 'text-amber-400/80' : 'text-gray-500'}>
-                        Market Order Fee: 0.05%
+                        Market Fee: 0.05%
                       </span>
                     </div>
                   </button>
@@ -271,10 +271,10 @@ export default function SettingsModal({ isOpen, onClose, profiles, setProfiles, 
                     <span className="text-white font-bold">KCEX</span>
                     <div className="flex flex-col items-center text-[10px] font-mono font-semibold leading-tight">
                       <span className={cryptoExchange === 'kcex' ? 'text-cyan-400/80' : 'text-gray-500'}>
-                        Limit Order Fee: 0.00%
+                        Limit Fee: 0.00%
                       </span>
                       <span className={cryptoExchange === 'kcex' ? 'text-emerald-400/80' : 'text-gray-500'}>
-                        Market Order Fee: 0.02%
+                        Market Fee: 0.02%
                       </span>
                     </div>
                   </button>
