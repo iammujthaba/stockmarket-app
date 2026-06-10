@@ -100,9 +100,8 @@ export default function TradeDetailsModal({ trade, onClose, cryptoExchange }) {
           <h3 className="text-base font-bold text-white tracking-tight">Active Trade Details</h3>
           <div className="flex items-center gap-2 mt-1">
             <span className="font-bold text-gray-200 font-mono text-sm tracking-tight">{trade.symbol}</span>
-            <span className={`px-2 py-0.5 rounded text-[9px] font-extrabold uppercase tracking-wider ${
-              trade.direction === 'long' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/10' : 'bg-red-500/10 text-red-400 border border-red-500/10'
-            }`}>
+            <span className={`px-2 py-0.5 rounded text-[9px] font-extrabold uppercase tracking-wider ${trade.direction === 'long' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/10' : 'bg-red-500/10 text-red-400 border border-red-500/10'
+              }`}>
               {trade.direction}
             </span>
             <span className="text-gray-500 text-xs font-mono flex items-center gap-1.5">
@@ -125,9 +124,11 @@ export default function TradeDetailsModal({ trade, onClose, cryptoExchange }) {
 
           {/* Entry Reason (Full width) */}
           {trade.entryReason && trade.entryReason !== 'N/A' && (
-            <div className="p-3 bg-gray-900/40 border border-gray-800/60 rounded-xl text-xs flex flex-col gap-1 text-left">
-              <span className="text-gray-500 font-medium tracking-wide">Entry Reason</span>
-              <span className="text-gray-300 font-sans leading-relaxed break-words">{trade.entryReason}</span>
+            <div className="relative border border-gray-800/60 rounded-xl p-4 mt-4 text-left">
+              <span className="absolute -top-2.5 left-4 bg-[#0c0e14] px-2 text-[10px] font-semibold text-gray-500 uppercase tracking-wider select-none">
+                Entry Reason
+              </span>
+              <p className="text-xs text-gray-300 italic leading-relaxed break-words">{trade.entryReason}</p>
             </div>
           )}
 
