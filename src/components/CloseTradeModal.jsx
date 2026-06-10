@@ -108,7 +108,7 @@ export default function CloseTradeModal({ trade, onClose, cryptoExchange }) {
         grossRisk: trade.grossRisk,
         grossReward: trade.grossReward,
         effectiveReward: grossRealizedPnL,
-        effectiveRR: trade.effectiveRR ? `1:${Number(trade.effectiveRR).toFixed(2)}` : 'N/A',
+        effectiveRR: trade.effectiveRR ? `1:${parseFloat(Number(trade.effectiveRR).toFixed(1))}` : 'N/A',
         actualFees: actualFees,
         netPnL: trueNetPnL,
         entryReason: trade.entryReason || 'N/A',

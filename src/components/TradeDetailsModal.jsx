@@ -79,6 +79,14 @@ export default function TradeDetailsModal({ trade, onClose, cryptoExchange }) {
   const leverageMultiplier = trade.leverage || (marginAmt > 0 ? Math.round(trade.positionValue / marginAmt) : 1) || 1;
   const isIndianDelivery = trade.market === 'indian' && trade.tradeType === 'delivery';
 
+  const getRrRatio = () => {
+    const rawVal = trade.effectiveRR 
+      ? Number(trade.effectiveRR) 
+      : (trade.netLoss > 0 ? (trade.netProfit / trade.netLoss) : (trade.totalRisk > 0 ? (trade.grossReward / trade.totalRisk) : 0));
+    return parseFloat(rawVal.toFixed(1));
+  };
+  const rrRatio = getRrRatio();
+
   return (
     <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fade-in">
       <div className="relative w-full max-w-sm bg-[#0c0e14]/98 border border-gray-800 rounded-2xl shadow-2xl overflow-hidden p-5 sm:p-6 backdrop-blur-md">
@@ -181,7 +189,12 @@ export default function TradeDetailsModal({ trade, onClose, cryptoExchange }) {
           {/* Risk vs Reward Row (Side-by-side) */}
           <div className="grid grid-cols-2 gap-3">
             <div className="p-3 bg-red-500/5 border border-red-500/10 rounded-xl text-center flex flex-col items-center justify-center">
-              <span className="text-[9px] text-red-400/60 uppercase tracking-wider mb-0.5 font-medium">Net Risk</span>
+              <span className="text-[9px] text-red-400/60 uppercase tracking-wider mb-1.5 font-medium flex items-center gap-1.5 justify-center">
+                <span>Net Risk</span>
+                <span className="text-[9px] text-gray-400 font-semibold px-1 py-0.5 rounded bg-gray-800 border border-gray-700 font-sans normal-case select-none">
+                  1:{rrRatio}
+                </span>
+              </span>
               <span className="text-red-400 font-mono font-bold text-sm sm:text-base">
                 -{currency}{trade.netLoss ? trade.netLoss.toFixed(2) : (trade.totalRisk ? trade.totalRisk.toFixed(2) : '0.00')}
               </span>

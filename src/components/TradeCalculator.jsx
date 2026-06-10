@@ -524,7 +524,7 @@ export default function TradeCalculator({ market, profile, onLogTrade, tradeType
               <span className="text-xs font-medium text-gray-300">Effective R:R (after fees)</span>
               <span className={`text-sm font-bold font-mono ${calculations.effectiveRR >= 1 ? 'text-emerald-400' : 'text-amber-400'
                 }`}>
-                1 : {calculations.effectiveRR.toFixed(2)}
+                1 : {parseFloat(calculations.effectiveRR.toFixed(1))}
               </span>
             </div>
           </div>
