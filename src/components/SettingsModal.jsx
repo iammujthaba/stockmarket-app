@@ -103,7 +103,10 @@ export default function SettingsModal({ isOpen, onClose, profiles, setProfiles, 
                 : 'text-gray-400 hover:text-gray-300 hover:bg-gray-800/50 border border-transparent'
                 }`}
             >
-              {profile.label}
+              {key === 'crypto'
+                ? `Crypto (${cryptoExchange === 'kcex' ? 'KCEX' : 'Binance'})`
+                : profile.label
+              }
             </button>
           ))}
         </div>

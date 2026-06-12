@@ -180,7 +180,7 @@ export default function App() {
               }`}
             >
               <span className="flex items-center justify-center gap-2">
-                🌐 Crypto (Binance)
+                🌐 Crypto ({cryptoExchange === 'kcex' ? 'KCEX' : 'Binance'})
               </span>
             </button>
           </div>

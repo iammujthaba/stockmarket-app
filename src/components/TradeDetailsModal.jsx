@@ -55,25 +55,7 @@ export default function TradeDetailsModal({ trade, onClose, cryptoExchange }) {
 
   const breakevenPrice = getBreakevenPrice();
 
-  const stopLossFees = calculateTradeFees(
-    trade.market,
-    trade.tradeType || 'intraday',
-    trade.entry,
-    trade.stopLoss,
-    trade.quantity,
-    trade.activeLeverage || 1,
-    cryptoExchange
-  );
 
-  const targetFees = calculateTradeFees(
-    trade.market,
-    trade.tradeType || 'intraday',
-    trade.entry,
-    trade.target,
-    trade.quantity,
-    trade.activeLeverage || 1,
-    cryptoExchange
-  );
 
   const marginAmt = trade.marginUtilized || (trade.positionValue / (trade.leverage || 1)) || 0;
   const leverageMultiplier = trade.leverage || (marginAmt > 0 ? Math.round(trade.positionValue / marginAmt) : 1) || 1;
@@ -170,21 +152,7 @@ export default function TradeDetailsModal({ trade, onClose, cryptoExchange }) {
             </div>
           )}
 
-          {/* Est. Fees Grid (Side-by-side) */}
-          <div className="grid grid-cols-2 gap-3 text-xs">
-            <div className="p-2.5 bg-gray-900/20 border border-gray-800/40 rounded-xl flex flex-col justify-center items-center text-center">
-              <span className="text-[9px] text-gray-500 uppercase tracking-wider mb-0.5 font-medium">SL Fee (Est)</span>
-              <span className="text-gray-300 font-mono font-bold">
-                {currency}{stopLossFees.toFixed(2)}
-              </span>
-            </div>
-            <div className="p-2.5 bg-gray-900/20 border border-gray-800/40 rounded-xl flex flex-col justify-center items-center text-center">
-              <span className="text-[9px] text-gray-500 uppercase tracking-wider mb-0.5 font-medium">Target Fee (Est)</span>
-              <span className="text-gray-300 font-mono font-bold">
-                {currency}{targetFees.toFixed(2)}
-              </span>
-            </div>
-          </div>
+
 
           {/* Risk vs Reward Row (Side-by-side) */}
           <div className="grid grid-cols-2 gap-3">
