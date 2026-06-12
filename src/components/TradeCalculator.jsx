@@ -379,10 +379,12 @@ export default function TradeCalculator({ market, profile, onLogTrade, tradeType
           {/* Primary outputs - Prominent display */}
           <div className="grid grid-cols-2 gap-3">
             <div className="bg-gradient-to-br from-cyan-500/10 to-cyan-500/5 border border-cyan-500/20 rounded-2xl p-4 text-center">
-              <p className="text-xs text-cyan-400/70 uppercase tracking-wider mb-1">Quantity</p>
+              <p className="text-xs text-cyan-400/70 uppercase tracking-wider mb-1">
+                {market === 'crypto' ? 'Position Size' : 'Quantity'}
+              </p>
               <p className="text-3xl font-bold text-cyan-300 font-mono tabular-nums">
                 {market === 'crypto'
-                  ? calculations.quantity.toFixed(6).replace(/\.?0+$/, '')
+                  ? `$${calculations.positionSize.toFixed(2)}`
                   : calculations.quantity.toLocaleString()
                 }
               </p>
@@ -461,7 +463,12 @@ export default function TradeCalculator({ market, profile, onLogTrade, tradeType
             {/* 3. Position Size */}
             <div className="flex justify-between items-center px-4 py-3">
               <span className="text-xs text-gray-400">Position Size</span>
-              <span className="text-sm text-white font-mono">{currency}{calculations.positionSize.toFixed(2)}</span>
+              <span className="text-sm text-white font-mono">
+                {market === 'crypto'
+                  ? `$${calculations.positionSize.toFixed(2)}`
+                  : calculations.quantity.toLocaleString()
+                }
+              </span>
             </div>
 
             {/* 4. Estimated Fees */}

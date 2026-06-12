@@ -168,7 +168,15 @@ export default function CloseTradeModal({ trade, onClose, cryptoExchange }) {
             {/* Summary details */}
             <div className="p-3 bg-gray-800/20 border border-gray-700/30 rounded-xl grid grid-cols-2 gap-2 text-xs font-mono text-gray-400">
               <div>Entry Price: <span className="text-white">{currency}{trade.entry.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span></div>
-              <div>Quantity: <span className="text-white">{trade.quantity.toLocaleString()}</span></div>
+              <div>
+                {trade.market === 'crypto' ? 'Position Size' : 'Quantity'}:{' '}
+                <span className="text-white">
+                  {trade.market === 'crypto'
+                    ? `$${trade.positionValue.toFixed(2)}`
+                    : trade.quantity.toLocaleString()
+                  }
+                </span>
+              </div>
               <div>Stop Loss: <span className="text-red-400">{currency}{trade.stopLoss.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span></div>
               <div>Target: <span className="text-emerald-400">{currency}{trade.target.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span></div>
             </div>

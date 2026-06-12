@@ -127,7 +127,7 @@ export default function TradeDetailsModal({ trade, onClose, cryptoExchange }) {
             <div className="p-3 bg-gray-900/40 border border-gray-800/60 rounded-xl flex justify-between items-center text-xs">
               <span className="text-gray-500 font-medium tracking-wide">Position Size</span>
               <span className="text-gray-100 font-mono font-bold text-sm">
-                {currency}{marginAmt > 0 ? marginAmt.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : 'N/A'}
+                {trade.quantity.toLocaleString()}
               </span>
             </div>
           ) : (
@@ -140,7 +140,10 @@ export default function TradeDetailsModal({ trade, onClose, cryptoExchange }) {
                   </span>
                 </span>
                 <span className="text-gray-100 font-mono font-bold text-sm">
-                  {currency}{(marginAmt * leverageMultiplier).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  {trade.market === 'crypto'
+                    ? `$${trade.positionValue.toFixed(2)}`
+                    : trade.quantity.toLocaleString()
+                  }
                 </span>
               </div>
               <div className="p-3 bg-gray-900/40 border border-gray-800/60 rounded-xl text-center flex flex-col justify-center items-center">

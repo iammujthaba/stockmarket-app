@@ -154,10 +154,12 @@ export default function CapitalLedger({ trades, onCloseTrade, profiles, cryptoEx
                     </span>
                   </div>
                   <div className="flex flex-col">
-                    <span className="text-[9px] text-gray-500 uppercase tracking-wider font-semibold">Quantity</span>
+                    <span className="text-[9px] text-gray-500 uppercase tracking-wider font-semibold">
+                      {trade.market === 'crypto' ? 'Size' : 'Quantity'}
+                    </span>
                     <span className="text-gray-200 font-mono font-medium mt-0.5">
                       {trade.market === 'crypto'
-                        ? trade.quantity.toString()
+                        ? `$${trade.positionValue.toFixed(2)}`
                         : trade.quantity.toLocaleString()
                       }
                     </span>
