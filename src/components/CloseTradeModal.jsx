@@ -95,6 +95,7 @@ export default function CloseTradeModal({ trade, onClose, cryptoExchange }) {
       headers: { "Content-Type": "text/plain;charset=utf-8" },
       body: JSON.stringify({
         market: trade.market,
+        exchange: trade.market === 'crypto' ? cryptoExchange : 'N/A',
         symbol: trade.symbol,
         direction: trade.direction,
         entryPrice: trade.entry,
